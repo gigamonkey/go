@@ -1,0 +1,3 @@
+#!/bin/sh
+
+java -Xdock:name="Go Critters" -cp java/class com.gigamonkeys.go.GUI
