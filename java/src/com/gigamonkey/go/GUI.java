@@ -14,7 +14,7 @@ public class GUI extends JFrame {
 		    JFrame frame = new JFrame("Go Critters");
 		    frame.setBounds(300, 300, 300, 300);
 		    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		    frame.add(new BoardPanel());
+		    frame.add(new BoardPanel(19));
 		    frame.setVisible(true);
 		}
 	    });
