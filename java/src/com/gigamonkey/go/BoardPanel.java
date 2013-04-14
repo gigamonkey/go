@@ -14,20 +14,31 @@ public class BoardPanel extends JPanel {
     private final static int WHITE = 2;
 
     private final static Color BOARD_COLOR = new Color(211, 177, 101);
+    private final static Color CRITTER_COLOR = new Color(0, 0, 255, 10); // new Color(70, 127, 250, 10);
     
     private final int size;
     private final int[] stones;
+    private final int[] critters;
 
     public BoardPanel(int size) {
-        this.size = size;
-        this.stones = new int[size * size];
+        this.size     = size;
+        this.stones   = new int[size * size];
+        this.critters = new int[size * size];
         randomStones();
+        randomCritters();
     }
 
     private void randomStones() {
         Random r = new Random();
         for (int i = 0; i < stones.length; i++) {
             this.stones[i] = r.nextInt(WHITE + 1);
+        }
+    }
+
+    private void randomCritters() {
+        Random r = new Random();
+        for (int i = 0; i < stones.length; i++) {
+            this.critters[i] = r.nextInt(10000);
         }
     }
 
@@ -69,7 +80,11 @@ public class BoardPanel extends JPanel {
             g.drawLine(left, top + step, right,  top + step);
             g.drawLine(left + step, top, left + step, bottom);
         }
-        
+        drawStones(g, left, top, squareSize);
+        drawCritters(g, left, top, squareSize);
+    }
+
+    private void drawStones(Graphics g, int left, int top, int squareSize) {
         for (int i = 0; i < stones.length; i++) {
             if (stones[i] == BLACK) {
                 drawBlackStone(g, left, top, squareSize, i % size, i / size);
@@ -105,6 +120,33 @@ public class BoardPanel extends JPanel {
             g.drawOval(gx, gy, squareSize, squareSize);
         }
     }
+
+    private void drawCritters(Graphics g, int left, int top, int squareSize) {
+        for (int i = 0; i < critters.length; i++) {
+            drawCrittersAt(g, left, top, squareSize, i % size, i / size, critters[i]);
+        }
+    }
+    
+    private void drawCrittersAt(Graphics g, int left, int top, int squareSize, int x, int y, int num) {
+        // Pick a spot a random distance from the exact center.
+        int gx = left + squareSize * x;
+        int gy = top + squareSize * y;
+        Random r = new Random();
+        for (int i = 0; i < num; i++) {
+            drawOneCritter(g, r, gx, gy, squareSize);
+        }
+    }
+
+    private void drawOneCritter(Graphics g, Random r, int gx, int gy, int squareSize) {
+        double maxJitter = squareSize/6;
+        int critterSize = 2;
+        int xJitter = (int)(r.nextGaussian() * maxJitter);
+        int yJitter = (int)(r.nextGaussian() * maxJitter);
+        g.setColor(CRITTER_COLOR);
+        g.fillOval(gx - critterSize/2 + xJitter, gy - critterSize/2 + yJitter, critterSize, critterSize);
+    }
+
+    
     
 }
 
