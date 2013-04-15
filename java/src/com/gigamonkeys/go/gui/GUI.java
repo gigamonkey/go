@@ -1,4 +1,4 @@
-package com.gigamonkeys.go;
+package com.gigamonkeys.go.gui;
 
 import java.awt.Color;
 import java.awt.Dimension;

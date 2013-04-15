@@ -1,4 +1,4 @@
-javafiles  = $(shell find java -name *.java)
+javafiles  = $(shell find java/src -name '*.java')
 classfiles = $(patsubst java/src/%.java,java/class/%.class,$(javafiles))
 
 all: $(classfiles)
