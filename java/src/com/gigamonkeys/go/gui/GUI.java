@@ -35,25 +35,19 @@ public class GUI extends JFrame {
 
         b.addBoardListener(boardGUI);
         
-        int[] passes = {0, 0};
+        int passes = 0;
 
         //for (int i = 0; i < 10 * b.positions; i++) {
         long start = System.currentTimeMillis();
-        int who = 0;
         int moves = 0;
         while (true) {
             moves++;
-            if (move(b, who == 0 ? Color.BLACK : Color.WHITE, r)) {
-                passes[who] = 0;
+            if (move(b, moves % 2 == 0 ? Color.BLACK : Color.WHITE, r)) {
+                passes = 0;
                 try { Thread.sleep(1); } catch (InterruptedException ie) {}
-
             } else {
-                passes[who]++;
-                if (passes[who] == 2) {
-                    break;
-                }
+                if (++passes == 2) break;
             }
-            who = (who + 1) % 2;
         }
         long time = System.currentTimeMillis() - start;
         System.out.println("Done.");

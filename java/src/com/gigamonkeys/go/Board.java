@@ -20,6 +20,8 @@ public class Board {
     private final BitSet whiteStones;
     private final List<BoardListener> listeners = new ArrayList<BoardListener>(5);
 
+    private LinkedList<Position> previousPositions = new LinkedList<Position>();
+
     public Board (int size) {
         this.size        = size;
         this.positions   = size * size;
@@ -65,8 +67,10 @@ public class Board {
         BitSet killed = killed(position, friends, enemies); 
         enemies.andNot(killed);
         
+        Position newPosition = new Position(color, blackStones, whiteStones);
+
         // Check for Ko. Not actually implemented yet.
-        if (isKo()) {
+        if (isKo(newPosition)) {
             enemies.or(killed);
             friends.clear(position);
             throw new IllegalMoveException("Ko", position);
@@ -81,6 +85,9 @@ public class Board {
             friends.clear(position);
             throw new IllegalMoveException("Suicide.", position);
         }
+
+        if (previousPositions.size() == 2) previousPositions.pop();
+        previousPositions.add(newPosition);
 
         fireBoardEvents(position, color, killed);
     }
@@ -150,8 +157,32 @@ public class Board {
         return dead(stones);
     }
 
-    private boolean isKo () {
-        return false; // TODO: implement
+    private boolean isKo (Position newPosition) {
+
+        // Simple ko rule: playing the current move cannot create the
+        // same position as our opponent faced after our prevous move.
+        // So store the previous two positions. E.g. the position
+        // after black's move (with white to play), and then the
+        // position after white's move (with black to play). Now it is
+        // black to play. If after black's move, the position in the
+        // same as the previous white-to-play position, that's Ko and
+        // illegal. If not, then forget about the old white-to-play
+        // move and remember the new-one. (The next move, by white,
+        // will use the black-to-play.)
+        
+        // Could also implement more complex "positional superko" rule
+        // by keeping a list of every prior position (including
+        // player-to-move) and checking the resutling position against
+        // every prior position. Could be done resonably efficiently
+        // by a) only looking at positions with the same player to
+        // play, b) caching the number of each kind of stone on the
+        // board and first making sure they match.
+
+        if (previousPositions.size() == 2) {
+            return previousPositions.peek().equals(newPosition);
+        } else {
+            return false;
+        }
     }
 
     private Color color (int position) {
@@ -202,6 +233,31 @@ public class Board {
     private Stones live(BitSet stones) { return new Stones(stones, true); }
 
     private Stones dead(BitSet stones) { return new Stones(stones, false); }
+
+
+    private static class Position {
+        
+        private final Color justPlayed;
+        private final BitSet blackStones;
+        private final BitSet whiteStones;
+
+        Position(Color justPlayed, BitSet blackStones, BitSet whiteStones) {
+            this.justPlayed  = justPlayed;
+            this.blackStones = (BitSet)blackStones.clone();
+            this.whiteStones = (BitSet)whiteStones.clone();
+        }
+        
+        public boolean equals(Object other) {
+            if (other instanceof Position) {
+                Position that = (Position)other;
+                return this.justPlayed.equals(that.justPlayed) &&
+                    this.blackStones.equals(that.blackStones) &&
+                    this.whiteStones.equals(that.whiteStones);
+            }
+            return false;
+        }
+
+    }
 
     public String toString() {
         StringBuffer buf = new StringBuffer();
