@@ -34,19 +34,34 @@ public class GUI extends JFrame {
 
         b.addBoardListener(boardGUI);
         
-        for (int i = 0; i < 2 * b.positions; i++) {
-            while (true) {
-                int p = r.nextInt(b.positions);
-                try {
-                    b.placeStone(i % 2 == 0 ? Color.BLACK : Color.WHITE, p);
-                    System.out.println(b);
-                    System.out.println();
+        int[] passes = {0, 0};
+
+        for (int i = 0; i < 10 * b.positions; i++) {
+            int who = i % 2;
+            if (move(b, who == 0 ? Color.BLACK : Color.WHITE, r)) {
+                passes[who] = 0;
+                try { Thread.sleep(1); } catch (InterruptedException ie) {}
+
+            } else {
+                passes[who]++;
+                if (passes[who] == 2) {
                     break;
-                } catch (IllegalMoveException ime) {
-                    System.out.println(ime);
                 }
             }
         }
         System.out.println("Done.");
+    }
+
+    private static boolean move(Board b, Color color, Random r) {
+        for (int i = 0; i < b.positions; i++) {
+            int p = r.nextInt(b.positions);
+            try {
+                b.placeStone(color, p);
+                return true;
+            } catch (IllegalMoveException ime) {
+                //System.out.println(ime);
+            }
+        }
+        return false;
     }
 }
