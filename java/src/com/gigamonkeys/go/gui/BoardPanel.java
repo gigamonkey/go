@@ -92,10 +92,12 @@ public class BoardPanel extends JPanel implements BoardListener {
         g.fillRect(left, top, right - left, bottom - top);
         g.setColor(Color.black);
 
-        for (int i = 0; i < size; i++) {
-            int step = squareSize * i;
-            g.drawLine(left, top + step, right,  top + step);
-            g.drawLine(left + step, top, left + step, bottom);
+        if (squareSize > 10) {
+            for (int i = 0; i < size; i++) {
+                int step = squareSize * i;
+                g.drawLine(left, top + step, right,  top + step);
+                g.drawLine(left + step, top, left + step, bottom);
+            }
         }
         drawStones(g, left, top, squareSize);
         drawCritters(g, left, top, squareSize);

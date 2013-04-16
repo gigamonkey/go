@@ -25,6 +25,7 @@ public class GUI extends JFrame {
 		    frame.setBounds(100, 100, 600, 600);
 		    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		    frame.add(boardGUI);
+                    frame.setExtendedState(frame.getExtendedState() | JFrame.MAXIMIZED_BOTH);
 		    frame.setVisible(true);
 		}
 	    });
@@ -36,8 +37,12 @@ public class GUI extends JFrame {
         
         int[] passes = {0, 0};
 
-        for (int i = 0; i < 10 * b.positions; i++) {
-            int who = i % 2;
+        //for (int i = 0; i < 10 * b.positions; i++) {
+        long start = System.currentTimeMillis();
+        int who = 0;
+        int moves = 0;
+        while (true) {
+            moves++;
             if (move(b, who == 0 ? Color.BLACK : Color.WHITE, r)) {
                 passes[who] = 0;
                 try { Thread.sleep(1); } catch (InterruptedException ie) {}
@@ -48,8 +53,13 @@ public class GUI extends JFrame {
                     break;
                 }
             }
+            who = (who + 1) % 2;
         }
+        long time = System.currentTimeMillis() - start;
         System.out.println("Done.");
+        if (time > 1000) {
+            System.out.println(moves + " moves in " + (time/1000) + " seconds. (" + (moves/(time/1000)) + "m/s)");
+        }
     }
 
     private static boolean move(Board b, Color color, Random r) {

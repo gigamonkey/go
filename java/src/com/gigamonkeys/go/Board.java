@@ -30,7 +30,6 @@ public class Board {
     public void addBoardListener(BoardListener listener) {
         listeners.add(listener);
     }
-        
 
     /**
      * Get the list of neighboring points. Either two, three, or four
@@ -66,7 +65,7 @@ public class Board {
         BitSet killed = killed(position, friends, enemies); 
         enemies.andNot(killed);
         
-        // Check for Ko.
+        // Check for Ko. Not actually implemented yet.
         if (isKo()) {
             enemies.or(killed);
             friends.clear(position);
@@ -77,24 +76,31 @@ public class Board {
         Stones us = connectedTo(position);
         if (!us.alive) {
             // Don't have to worry about putting back killed because
-            // if there were any killed then this group can't be dead.
+            // if there were any killed then we won't end up in this
+            // branch.
             friends.clear(position);
             throw new IllegalMoveException("Suicide.", position);
         }
 
-        
-        // Fire events.
+        fireBoardEvents(position, color, killed);
+    }
+
+    private void fireBoardEvents(int position, Color color, BitSet killed) {
+
         BoardEvent added = new BoardEvent(this, position, color);
         List<BoardEvent> removed = new ArrayList<BoardEvent>();
+
         for (int i = killed.nextSetBit(0); i != -1; i = killed.nextSetBit(i + 1)) {
             removed.add(new BoardEvent(this, i, Color.EMPTY));
         }
+
         for (BoardListener listener: listeners) {
             listener.stoneAdded(added);
             for (BoardEvent e: removed) {
                 listener.stoneRemoved(e);
             }
         }
+
     }
 
     /*
