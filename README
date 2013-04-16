@@ -1,0 +1,8 @@
+This is a work-in-progress of a reimplementation of a system I wrote
+almost fifteen years ago to breed genetic algorithms that play the
+game of Go.
+
+I've only been hacking on it for a couple days and my Java is rusty so
+the code is likely to be gnarly in places.
+
+--Peter
