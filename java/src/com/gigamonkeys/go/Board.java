@@ -14,16 +14,28 @@ import java.util.Random;
  */ 
 public class Board {
 
-    private final int size;
+    public final int size;
+    public final int positions;
     private final BitSet blackStones;
     private final BitSet whiteStones;
+    private final List<BoardListener> listeners = new ArrayList<BoardListener>(5);
 
     public Board (int size) {
-        this.size = size;
-        this.blackStones = new BitSet(size * size);
-        this.whiteStones = new BitSet(size * size);
+        this.size        = size;
+        this.positions   = size * size;
+        this.blackStones = new BitSet(positions);
+        this.whiteStones = new BitSet(positions);
     }
 
+    public void addBoardListener(BoardListener listener) {
+        listeners.add(listener);
+    }
+        
+
+    /**
+     * Get the list of neighboring points. Either two, three, or four
+     * depending whether position is a corner, edge, or middle point.
+     */
     public List<Integer> neighbors (int position) {
 
         int x   = position % size;
@@ -69,6 +81,20 @@ public class Board {
             friends.clear(position);
             throw new IllegalMoveException("Suicide.", position);
         }
+
+        
+        // Fire events.
+        BoardEvent added = new BoardEvent(this, position, color);
+        List<BoardEvent> removed = new ArrayList<BoardEvent>();
+        for (int i = killed.nextSetBit(0); i != -1; i = killed.nextSetBit(i + 1)) {
+            removed.add(new BoardEvent(this, i, Color.EMPTY));
+        }
+        for (BoardListener listener: listeners) {
+            listener.stoneAdded(added);
+            for (BoardEvent e: removed) {
+                listener.stoneRemoved(e);
+            }
+        }
     }
 
     /*
@@ -76,18 +102,13 @@ public class Board {
      */
     private BitSet killed(int position, BitSet friends, BitSet enemies) {
         
-        BitSet live = new BitSet(size * size);
-        BitSet dead = new BitSet(size * size);
+        BitSet live = new BitSet(positions);
+        BitSet dead = new BitSet(positions);
 
         for (int n: neighbors(position)) {
-            
             if (enemies.get(n) && !(live.get(n) || dead.get(n))) {
                 Stones s = connectedTo(n);
-                if (s.alive) {
-                    live.or(s.stones);
-                } else {
-                    dead.or(s.stones);
-                }
+                (s.alive ? live : dead).or(s.stones);
             }
         }
         return dead;
@@ -100,7 +121,7 @@ public class Board {
      */
     private Stones connectedTo (int position) {
         
-        BitSet stones            = new BitSet(size * size);
+        BitSet stones            = new BitSet(positions);
         Queue<Integer> toProcess = new LinkedList<Integer>();
 
         // Get the ball rolling ...
@@ -154,7 +175,7 @@ public class Board {
     public BitSet empties () {
         BitSet empties = (BitSet)blackStones.clone();
         empties.or(whiteStones);
-        empties.flip(0, size * size);
+        empties.flip(0, positions);
         return empties;
     }
     
@@ -178,7 +199,7 @@ public class Board {
 
     public String toString() {
         StringBuffer buf = new StringBuffer();
-        for (int p = 0; p < size * size; p++) {
+        for (int p = 0; p < positions; p++) {
             if ((p % size) == 0) buf.append("\n");
             switch (color(p)) {
             case BLACK: buf.append("@ "); break;
@@ -188,45 +209,5 @@ public class Board {
         }
         return buf.toString();
     }
-
-    public static void main(String[] args) {
-        
-        final int size = args.length > 0 ? Integer.parseInt(args[0]) : 19;
-
-        Board b = new Board(size);
-
-        Random r = new Random();
-
-        for (int i = 0; i < size * size; i++) {
-            int p = r.nextInt(size * size);
-            try {
-                b.placeStone(i % 2 == 0 ? Color.BLACK : Color.WHITE, p);
-                System.out.println(b);
-                System.out.println("Empty:");
-                BitSet empties = b.empties();
-                int e = 0;
-                while ((e = empties.nextSetBit(e)) != -1) {
-                    System.out.print(e + " ");
-                    e++;
-                }
-                System.out.println();
-            } catch (IllegalMoveException ime) {
-                System.out.println(ime);
-            }
-        }
-
-
-        /*
-        for (int p = 0; p < size * size; p++) {
-            System.out.print(p + ":");
-            for (int n: b.neighbors(p)) {
-                System.out.print(" " + n);
-            }
-            System.out.println();
-        }
-        */
-    }
-
-
 
 }

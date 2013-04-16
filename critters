@@ -1,3 +1,6 @@
 #!/bin/sh
 
+# Some useful options:
+# -verbose:gc 
+
 java -Xdock:name="Go Critters" -cp java/class com.gigamonkeys.go.gui.GUI $1

@@ -7,7 +7,11 @@ import java.awt.Graphics;
 import java.util.Random;
 import javax.swing.*;
 
-public class BoardPanel extends JPanel {
+import com.gigamonkeys.go.BoardEvent;
+import com.gigamonkeys.go.BoardListener;
+
+
+public class BoardPanel extends JPanel implements BoardListener {
 
     private final static int EMPTY = 0;
     private final static int BLACK = 1;
@@ -24,8 +28,21 @@ public class BoardPanel extends JPanel {
         this.size     = size;
         this.stones   = new int[size * size];
         this.critters = new int[size * size];
-        randomStones();
-        randomCritters();
+        //randomStones();
+        //randomCritters();
+    }
+
+
+    public void stoneAdded(BoardEvent be) {
+        stones[be.position] = be.color == com.gigamonkeys.go.Color.BLACK ? BLACK : WHITE;
+        // FIXME: probably only need the part of the board displaying the stone
+        repaint();
+    }
+
+    public void stoneRemoved(BoardEvent be) {
+        stones[be.position] = EMPTY;
+        // FIXME: probably only need the part of the board displaying the stone
+        repaint();
     }
 
     private void randomStones() {
