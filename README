@@ -5,4 +5,7 @@ game of Go.
 I've only been hacking on it for a couple days and my Java is rusty so
 the code is likely to be gnarly in places.
 
+Note also that so far I've only implemented the basic rules of Go. The
+GA part remains to be done.
+
 --Peter
