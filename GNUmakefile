@@ -5,16 +5,20 @@ testclasses	:= $(patsubst java/tests/%.java,java/class/%.class,$(testfiles))
 
 all: $(srcclasses) $(testclasses)
 
-$(srcclasses) : java/class/%.class: java/src/%.java
+$(srcclasses) : java/class/%.class: java/src/%.java | java/class
 	javac -d java/class -classpath java/src:java/class $<
 
-$(testclasses): java/class/%.class: java/tests/%.java
+$(testclasses): java/class/%.class: java/tests/%.java | java/class
 	javac -d java/class -classpath java/src:java/class $<
 
+java/class:
+	mkdir -p $@
 
 clean:
 	rm -rf java/class
-	mkdir java/class
+
+tidy:
+	find . -name '*~' -exec rm {} \;
 
 test: all
 	./critters 19
