@@ -3,13 +3,15 @@ testfiles	:= $(shell find java/tests -name '*.java')
 srcclasses	:= $(patsubst java/src/%.java,java/class/%.class,$(srcfiles))
 testclasses	:= $(patsubst java/tests/%.java,java/class/%.class,$(testfiles))
 
+JAVACOPTS := -Xlint:unchecked
+
 all: $(srcclasses) $(testclasses)
 
 $(srcclasses) : java/class/%.class: java/src/%.java | java/class
-	javac -d java/class -classpath java/src:java/class $<
+	javac $(JAVACOPTS) -d java/class -classpath java/src:java/class $<
 
 $(testclasses): java/class/%.class: java/tests/%.java | java/class
-	javac -d java/class -classpath java/src:java/class $<
+	javac $(JAVACOPTS) -d java/class -classpath java/src:java/class $<
 
 java/class:
 	mkdir -p $@
