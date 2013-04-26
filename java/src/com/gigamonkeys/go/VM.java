@@ -1,5 +1,9 @@
 package com.gigamonkeys.go;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 /*
  * Copyright (c) 2013 Peter Seibel
  */
@@ -46,14 +50,16 @@ public class VM {
     public final static int THEIRS   = 21;
     public final static int EMPTY    = 22;
 
-    public final static int PUSH     = 23;
-    public final static int POP      = 24;
-    public final static int SWAP     = 25;
-    public final static int ROT      = 26;
-    public final static int DUP      = 27;
-    public final static int OVER     = 28;
-    public final static int TUCK     = 29;
+    public final static int POP      = 23;
+    public final static int SWAP     = 24;
+    public final static int ROT      = 25;
+    public final static int DUP      = 26;
+    public final static int OVER     = 27;
+    public final static int TUCK     = 28;
 
+    // Arrange to have all the instructions with operands consecutive,
+    // PUSH to CALL.
+    public final static int PUSH     = 29;
     public final static int IFZERO   = 30;
     public final static int IFPOS    = 31;
     public final static int IFNEG    = 32;
@@ -64,36 +70,112 @@ public class VM {
     public final static int CALL     = 37;
     public final static int RET      = 38;
 
-    private static class Op {
-        public int opcode;
+    private static class Op implements Comparable<Op> {
+
+        public final int opcode;
+        public final int address;
+
         public int operand;
-        public Op next;
-        public Op next2;
+        public Op next;  // The following instruction
+        public Op next2; // The other branch for IFmumble and CALL
+        
+        Op(int opcode, int address) {
+            this.opcode  = opcode;
+            this.address = address;
+        }
+
+        public int compareTo(Op other) {
+            return this.address - other.address;
+        }
     }
 
     /**
      * Compile bytecodes and return the Op object representing the first instruction.
      */
-    private Op compile(byte[] bytecodes) {
-        throw new Error("nyi");
+    public Op compile(byte[] bytecodes) {
+        // We're going to collect the Ops so we can resolve jump
+        // targets. But in the end we only need to return the starting
+        // Op.
+        List<Op> ops = new ArrayList<Op>();
+
+        // Null object so we don't have to check previous == null all
+        // the time.
+        Op previous = new Op(NOP,-1);
+
+        // First pass we pick out the actual opcodes and generate Op
+        // objects for each of them. For ops that take an in-bytecode
+        // operand (PUSH and all the branching ops) we store it in
+        // operand as a number. 
+        int i = 0;
+        while (i < bytecodes.length) {
+            byte b = bytecodes[i++];
+            if (isOpcode(b)) {
+                Op op = new Op(b, i - 1);
+                try {
+                    if (hasOperand(b)) {
+                        op.operand = ((bytecodes[i++] & 0xff) << 8) | (bytecodes[i++] & 0xff);
+                    }
+                    ops.add(op);
+                    previous.next = op;
+                    previous      = op;
+                } catch (ArrayIndexOutOfBoundsException aioobe) {
+                    // Ended with op code for op with operand but not
+                    // enough bytes left. We'll just ignore that op.
+                }
+            }
+        }
+        
+        // Fill in next2 pointers by finding the first actual Op at an
+        // address >= to the address in the bytecode. We add a STOP
+        // instruction at the end of the list of ops and then clamp
+        // the possible addresses so that anything that jumps past the
+        // end of the bytecodes will instead jump to the STOP.
+        ops.add(new Op(STOP, bytecodes.length));
+        for (Op op: ops) {
+            if (hasNext2(op.opcode)) {
+                op.next2 = findTarget(Math.min(op.operand, bytecodes.length), ops);
+            }
+        }
+        return ops.get(0);
     }
 
-    public void run(byte[] bytecodes, int stackdepth, int callstackdepth, int memorysize, int maxCycles, Board board, Color color, int start) {
-        int tos        = 0;
-        int sp         = 0;
-        int csp        = 0;
+    private Op findTarget(int address, List<Op> ops) {
+        int pos = Collections.binarySearch(ops, new Op(NOP, address));
+        return pos >= 0 ? ops.get(pos) : ops.get(-1 * (pos + 1));
+    }
+
+    private boolean isOpcode(byte b) {
+        // NOP is an opcode that execute actually can execute but we
+        // don't generate an Op for it. And everything greater than
+        // the last opcode is also a no-op.
+        return NOP < b && b <= RET;
+    }
+
+    private boolean hasOperand(byte b) {
+        return PUSH <= b && b <= CALL;
+    }
+
+    private boolean hasNext2(int b) {
+        return IFZERO <= b && b <= CALL;
+    }
+
+    public int execute(Op start, int stackdepth, int callstackdepth, int memorysize, int maxCycles, Board board, Color color, int startPosition) {
         int[] stack    = new int[stackdepth];
         Op[] callstack = new Op[callstackdepth];
         int[] memory   = new int[memorysize];
-        int position   = start;
+        int position   = startPosition;
+
+        int tos        = 0;
+        int sp         = 0;
+        int csp        = 0;
         int cycles     = 0;
 
         int tmp;
 
-        Op op = compile(bytecodes);
+        Op op = start;
 
         while (op != null) {
-            if (cycles++ > maxCycles) return;
+            if (cycles++ > maxCycles) break;
 
             Op next = null;
 
@@ -101,7 +183,7 @@ public class VM {
             case NOP:
                 break;
             case STOP:
-                return;
+                return position;
             case NORTH:
                 position = board.north(position);
                 break;
@@ -203,45 +285,47 @@ public class VM {
                 sp++;
                 break;
             case IFZERO:
-                next = tos == 0 ? op.next : op.next2;
+                next = tos == 0 ? op.next2 : op.next;
                 tos = stack[--sp];
                 break;
             case IFPOS:
-                next = tos > 0 ? op.next : op.next2;
+                next = tos > 0 ? op.next2 : op.next;
                 tos = stack[--sp];
                 break;
             case IFNEG:
-                next = tos < 0 ? op.next : op.next2;
+                next = tos < 0 ? op.next2 : op.next;
                 tos = stack[--sp];
                 break;
             case IFNZERO:
-                next = tos != 0 ? op.next : op.next2;
+                next = tos != 0 ? op.next2 : op.next;
                 tos = stack[--sp];
                 break;
             case IFNNEG:
-                next = tos >= 0 ? op.next : op.next2;
+                next = tos >= 0 ? op.next2 : op.next;
                 tos = stack[--sp];
                 break;
             case IFNPOS:
-                next = tos <= 0 ? op.next : op.next2;
+                next = tos <= 0 ? op.next2 : op.next;
                 tos = stack[--sp];
                 break;
             case GOTO:
-                next = op.next;
+                next = op.next2;
                 break;
             case CALL:
-                // Next is the following instruction, next2 is where
-                // we're calling to.
                 callstack[csp++] = op.next;
                 next = op.next2;
                 break;
             case RET:
                 next = callstack[--csp];
                 break;
+            default:
+                throw new RuntimeException("Illegal opcode: " + op.opcode);
             }
-            // Default case is to simply move to next instruction.
+            // Default case, if next hasn't been set, is to simply
+            // move to next instruction.
             op = next != null ? next : op.next;
         }
+        return position;
     }
 
     private int safeDiv(int n, int d) {
