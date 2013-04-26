@@ -76,8 +76,8 @@ public class VM {
         public final int address;
 
         public int operand;
-        public Op next;  // The following instruction
-        public Op next2; // The other branch for IFmumble and CALL
+        public Op next;  // Always the next instruction in the bytecode
+        public Op next2; // The other sucessor for branching and jumping instructions.
         
         Op(int opcode, int address) {
             this.opcode  = opcode;
@@ -132,7 +132,7 @@ public class VM {
         // end of the bytecodes will instead jump to the STOP.
         ops.add(new Op(STOP, bytecodes.length));
         for (Op op: ops) {
-            if (hasNext2(op.opcode)) {
+            if (isBranchOrJump(op.opcode)) {
                 op.next2 = findTarget(Math.min(op.operand, bytecodes.length), ops);
             }
         }
@@ -155,7 +155,7 @@ public class VM {
         return PUSH <= b && b <= CALL;
     }
 
-    private boolean hasNext2(int b) {
+    private boolean isBranchOrJump(int b) {
         return IFZERO <= b && b <= CALL;
     }
 
