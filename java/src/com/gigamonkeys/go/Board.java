@@ -272,4 +272,13 @@ public class Board {
         return buf.toString();
     }
 
+    public int north(int position) { throw new Error("nyi"); }
+    public int south(int position) { throw new Error("nyi"); }
+    public int east(int position) { throw new Error("nyi"); }
+    public int west(int position) { throw new Error("nyi"); }
+
+    public int mine(Color color) { throw new Error("nyi"); }
+    public int theirs(Color color) { throw new Error("nyi"); }
+    public int empty(Color color) { throw new Error("nyi"); }
+
 }

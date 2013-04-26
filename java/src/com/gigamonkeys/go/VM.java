@@ -58,10 +58,11 @@ public class VM {
     public final static int IFPOS    = 31;
     public final static int IFNEG    = 32;
     public final static int IFNZERO  = 33;
-    public final static int GOTO     = 34;
-    public final static int CALL     = 35;
-    public final static int RET      = 36;
-
+    public final static int IFNPOS   = 34;
+    public final static int IFNNEG   = 35;
+    public final static int GOTO     = 36;
+    public final static int CALL     = 37;
+    public final static int RET      = 38;
 
     private static class Op {
         public int opcode;
@@ -215,6 +216,14 @@ public class VM {
                 break;
             case IFNZERO:
                 next = tos != 0 ? op.next : op.next2;
+                tos = stack[--sp];
+                break;
+            case IFNNEG:
+                next = tos >= 0 ? op.next : op.next2;
+                tos = stack[--sp];
+                break;
+            case IFNPOS:
+                next = tos <= 0 ? op.next : op.next2;
                 tos = stack[--sp];
                 break;
             case GOTO:
