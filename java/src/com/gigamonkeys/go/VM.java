@@ -24,87 +24,132 @@ import java.util.List;
  */
 public class VM {
 
-    // No op.
-    public final static byte NOP      = 0;
+    // N.B. Certain aspects of the structure of this file are
+    // necessary for the script vm.pl to be able to act as a special
+    // purpose macro processor for this one file. Lovely, I know.
 
-    // Movement ops
-    public final static byte NORTH    = 1;
-    public final static byte SOUTH    = 2;
-    public final static byte EAST     = 3;
-    public final static byte WEST     = 4;
-    public final static byte POSITION = 5;
+    // No op.
+    public final static byte NOP            = 0;
 
     // Memory ops
-    public final static byte LOAD     = 6;
-    public final static byte STORE    = 7;
+    public final static byte LOAD           = 1;
+    public final static byte STORE          = 2;
 
     // Math ops
-    public final static byte ADD      = 8;
-    public final static byte SUB      = 9;
-    public final static byte MUL      = 10;
-    public final static byte DIV      = 11;
-    public final static byte MOD      = 12;
-    public final static byte INC      = 13;
-    public final static byte DEC      = 14;
+    public final static byte ADD            = 3;
+    public final static byte SUB            = 4;
+    public final static byte MUL            = 5;
+    public final static byte DIV            = 6;
+    public final static byte MOD            = 7;
+    public final static byte INC            = 8;
+    public final static byte DEC            = 9;
+    public final static byte RAND           = 10;
 
     // Logic ops
-    public final static byte AND      = 15;
-    public final static byte OR       = 16;
-    public final static byte XOR      = 17;
-    public final static byte NOT      = 18;
-
-    // Perception ops
-    public final static byte MINE     = 19;
-    public final static byte THEIRS   = 20;
-    public final static byte EMPTY    = 21;
+    public final static byte AND            = 11;
+    public final static byte OR             = 12;
+    public final static byte XOR            = 13;
+    public final static byte NOT            = 14;
 
     // Stack ops [1]
-    public final static byte POP      = 22;
-    public final static byte SWAP     = 23;
-    public final static byte ROT      = 24;
-    public final static byte DUP      = 25;
-    public final static byte OVER     = 26;
-    public final static byte TUCK     = 27;
-    public final static byte PUSH     = 28;
+    public final static byte POP            = 15;
+    public final static byte SWAP           = 16;
+    public final static byte ROT            = 17;
+    public final static byte DUP            = 18;
+    public final static byte OVER           = 19;
+    public final static byte TUCK           = 20;
+    public final static byte PUSH           = 21;
 
     // Flow control ops
-    public final static byte IFZERO   = 29;
-    public final static byte IFPOS    = 30;
-    public final static byte IFNEG    = 31;
-    public final static byte IFNZERO  = 32;
-    public final static byte IFNPOS   = 33;
-    public final static byte IFNNEG   = 34;
-    public final static byte GOTO     = 35;
-    public final static byte CALL     = 36;
-    public final static byte RET      = 37;
-    public final static byte STOP     = 38;
+    public final static byte IFZERO         = 22;
+    public final static byte IFPOS          = 23;
+    public final static byte IFNEG          = 24;
+    public final static byte IFNZERO        = 25;
+    public final static byte IFNPOS         = 26;
+    public final static byte IFNNEG         = 27;
+    public final static byte GOTO           = 28;
+    public final static byte CALL           = 29;
+    public final static byte RET            = 30;
+    public final static byte STOP           = 31;
+
+    // Movement ops
+    public final static byte FORWARD        = 32;
+    public final static byte TURN_AROUND    = 33;
+    public final static byte TURN_RIGHT     = 34;
+    public final static byte TURN_LEFT      = 35;
+    public final static byte POSITION       = 36;
+
+    // Turn in a particular direction based on the gradients overlayed
+    // on the board. E.g. MY_UPHILL picks the neighboring point with
+    // the maximum MY gradient value (or a random one if there are
+    // ties)
+    public final static byte MY_UPHILL      = 37;
+    public final static byte THEIR_UPHILL   = 38;
+    public final static byte EMPTY_UPHILL   = 39;
+    public final static byte MY_DOWNHILL    = 40;
+    public final static byte THEIR_DOWNHILL = 41;
+    public final static byte EMPTY_DOWNHILL = 42;
+
+    // Perception ops
+    public final static byte MINE           = 43;
+    public final static byte THEIRS         = 44;
+    public final static byte EMPTY          = 45;
+    public final static byte MY_GRADIENT    = 46;
+    public final static byte THEIR_GRADIENT = 47;
+    public final static byte EMPTY_GRADIENT = 48;
+
 
     public final static String[] NAMES = {
-	// No op.
 	"NOP",
-
-	// Movement ops
-	"NORTH", "SOUTH", "EAST", "WEST", "POSITION",
-
-	// Memory ops
-	"LOAD", "STORE",
-
-	// Math ops
-	"ADD", "SUB", "MUL", "DIV", "MOD", "INC", "DEC",
-
-	// Logic ops
-	"AND", "OR", "XOR", "NOT",
-
-	// Perception ops
-	"MINE", "THEIRS", "EMPTY",
-
-	// Stack ops [1]
-	"POP", "SWAP", "ROT", "DUP", "OVER", "TUCK", "PUSH",
-
-	// Flow control ops
-	"IFZERO", "IFPOS", "IFNEG", "IFNZERO", "IFNPOS", "IFNNEG",
-	"GOTO", "CALL", "RET", "STOP",
-    };
+	"LOAD",
+	"STORE",
+	"ADD",
+	"SUB",
+	"MUL",
+	"DIV",
+	"MOD",
+	"INC",
+	"DEC",
+	"RAND",
+	"AND",
+	"OR",
+	"XOR",
+	"NOT",
+	"POP",
+	"SWAP",
+	"ROT",
+	"DUP",
+	"OVER",
+	"TUCK",
+	"PUSH",
+	"IFZERO",
+	"IFPOS",
+	"IFNEG",
+	"IFNZERO",
+	"IFNPOS",
+	"IFNNEG",
+	"GOTO",
+	"CALL",
+	"RET",
+	"STOP",
+	"FORWARD",
+	"TURN_AROUND",
+	"TURN_RIGHT",
+	"TURN_LEFT",
+	"POSITION",
+	"MY_UPHILL",
+	"THEIR_UPHILL",
+	"EMPTY_UPHILL",
+	"MY_DOWNHILL",
+	"THEIR_DOWNHILL",
+	"EMPTY_DOWNHILL",
+	"MINE",
+	"THEIRS",
+	"EMPTY",
+	"MY_GRADIENT",
+	"THEIR_GRADIENT",
+	"EMPTY_GRADIENT",
+    }; // End NAMES
 
     private final int stackDepth;
     private final int callstackDepth;
@@ -255,24 +300,6 @@ public class VM {
 	    switch (op.opcode) {
 	    case NOP:
 		break;
-	    case STOP:
-		return position;
-	    case NORTH:
-		position = board.north(position);
-		break;
-	    case SOUTH:
-		position = board.south(position);
-		break;
-	    case EAST:
-		position = board.east(position);
-		break;
-	    case WEST:
-		position = board.west(position);
-		break;
-	    case POSITION:
-		stack[sp++] = tos;
-		tos = position;
-		break;
 	    case LOAD:
 		tos = memory[tos % memory.length];
 		break;
@@ -303,6 +330,9 @@ public class VM {
 	    case DEC:
 		tos--;
 		break;
+	    case RAND:
+		// Implement
+		break;
 	    case AND:
 		tos = tos & stack[--sp];
 		break;
@@ -315,47 +345,35 @@ public class VM {
 	    case NOT:
 		tos = ~tos;
 		break;
-	    case MINE:
-		stack[sp++] = tos;
-		tos = board.mine(color);
-		break;
-	    case THEIRS:
-		stack[sp++] = tos;
-		tos = board.theirs(color);
-		break;
-	    case EMPTY:
-		stack[sp++] = tos;
-		tos = board.empty(color);
-		break;
-	    case PUSH: // add constant value to stack
-		stack[sp++] = tos;
-		tos = op.operand;
-		break;
 	    case POP:
 		tos = stack[--sp];
 		break;
-	    case SWAP: // swap top two items
+	    case SWAP:
 		tmp = tos;
 		tos = stack[sp - 1];
 		stack[sp - 1] = tmp;
 		break;
-	    case ROT: // Rotate top three items so third from top ends up on top.
+	    case ROT:
 		tmp = stack[sp - 3];
 		stack[sp - 3] = stack[sp - 2];
 		stack[sp - 1] = tos;
 		tos = tmp;
 		break;
-	    case DUP: // duplicate top item of stack.
+	    case DUP:
 		stack[sp++] = tos;
 		break;
-	    case OVER: // Copy the second item on stack to top.
+	    case OVER:
 		stack[sp++] = tos;
 		tos = stack[sp - 2];
 		break;
-	    case TUCK: // Copy top of stack to 3rd position.
+	    case TUCK:
 		stack[sp] = stack[sp - 1];
 		stack[sp - 1] = tos;
 		sp++;
+		break;
+	    case PUSH:
+		stack[sp++] = tos;
+		tos = op.operand;
 		break;
 	    case IFZERO:
 		next = tos == 0 ? op.next2 : op.next;
@@ -373,12 +391,12 @@ public class VM {
 		next = tos != 0 ? op.next2 : op.next;
 		tos = stack[--sp];
 		break;
-	    case IFNNEG:
-		next = tos >= 0 ? op.next2 : op.next;
-		tos = stack[--sp];
-		break;
 	    case IFNPOS:
 		next = tos <= 0 ? op.next2 : op.next;
+		tos = stack[--sp];
+		break;
+	    case IFNNEG:
+		next = tos >= 0 ? op.next2 : op.next;
 		tos = stack[--sp];
 		break;
 	    case GOTO:
@@ -390,6 +408,63 @@ public class VM {
 		break;
 	    case RET:
 		next = callstack[--csp];
+		break;
+	    case STOP:
+		return position;
+	    case FORWARD:
+		// Implement
+		break;
+	    case TURN_AROUND:
+		// Implement
+		break;
+	    case TURN_RIGHT:
+		// Implement
+		break;
+	    case TURN_LEFT:
+		// Implement
+		break;
+	    case POSITION:
+		stack[sp++] = tos;
+		tos = position;
+		break;
+	    case MY_UPHILL:
+		// Implement
+		break;
+	    case THEIR_UPHILL:
+		// Implement
+		break;
+	    case EMPTY_UPHILL:
+		// Implement
+		break;
+	    case MY_DOWNHILL:
+		// Implement
+		break;
+	    case THEIR_DOWNHILL:
+		// Implement
+		break;
+	    case EMPTY_DOWNHILL:
+		// Implement
+		break;
+	    case MINE:
+		stack[sp++] = tos;
+		tos = board.mine(color);
+		break;
+	    case THEIRS:
+		stack[sp++] = tos;
+		tos = board.theirs(color);
+		break;
+	    case EMPTY:
+		stack[sp++] = tos;
+		tos = board.empty(color);
+		break;
+	    case MY_GRADIENT:
+		// Implement
+		break;
+	    case THEIR_GRADIENT:
+		// Implement
+		break;
+	    case EMPTY_GRADIENT:
+		// Implement
 		break;
 	    default:
 		throw new RuntimeException("Illegal opcode: " + op.opcode);
