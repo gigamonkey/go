@@ -95,7 +95,6 @@ public class VM {
     public final static byte RET            = 48;
     public final static byte STOP           = 49;
 
-
     // Perception ops
     public final static byte MINE           = 50;
     public final static byte THEIRS         = 51;
@@ -103,7 +102,6 @@ public class VM {
     public final static byte MINE_GRADIENT  = 53;
     public final static byte THEIR_GRADIENT = 54;
     public final static byte EMPTY_GRADIENT = 55;
-
 
     public final static String[] NAMES = {
         "NOP",
@@ -286,7 +284,7 @@ public class VM {
         // NOP is an opcode that execute actually can execute but we
         // don't generate an Op for it. And everything greater than
         // the last opcode is also a no-op.
-        return NOP < b && b <= RET;
+        return NOP < b && b <= EMPTY_GRADIENT;
     }
 
     public int execute(Op start,

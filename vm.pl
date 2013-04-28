@@ -119,12 +119,12 @@ sub dump_cases {
     foreach my $line (@lines) {
         if ($line =~ $const_pat) {
             $dumped{$2}++;
-            print " " x 12;
+            print " " x 16;
             print "case $2:\n";
             if (defined $cases{$2}) {
                 my @code = @{$cases{$2}};
                 if ($#code == 0 and $2 ne 'NOP' and $2 ne 'STOP') {
-                    unshift @code, (" " x 16) . "// Implement\n";
+                    unshift @code, (" " x 18) . "// Implement\n";
                 }
                 foreach my $line (@code) {
                     print $line;
