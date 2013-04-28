@@ -279,12 +279,11 @@ public class VM {
         return NOP < b && b <= RET;
     }
 
-    public int execute(Op start, Board board, Color color, int startPosition, int startDirection) {
+    public int execute(Op start, Board board, Color color, int position, int direction) {
         int[] stack    = new int[stackDepth];
         Op[] callstack = new Op[callstackDepth];
         int[] memory   = new int[memorySize];
-        int position   = startPosition;
-        int direction  = startDirection;
+        int size       = board.size;
 
         int tos        = 0;
         int sp         = 0;
@@ -416,7 +415,20 @@ public class VM {
             case STOP:
                 return position;
             case FORWARD:
-                // Implement
+                switch (direction) {
+                case 0: // North
+                    if (position >= size) position -= size;
+                    break;
+                case 1: // East
+                    if ((position % size) < (size - 1)) position += 1;
+                    break;
+                case 2: // South
+                    if (position < (size * (size - 1))) position += size;
+                    break;
+                case 3: // West
+                    if ((position % size) > 0) position -= 1;
+                    break;
+                }
                 break;
             case TURN_AROUND:
                 direction = (direction + 2) % 4;
