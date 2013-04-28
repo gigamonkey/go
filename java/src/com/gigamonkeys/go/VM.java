@@ -101,55 +101,55 @@ public class VM {
 
 
     public final static String[] NAMES = {
-	"NOP",
-	"LOAD",
-	"STORE",
-	"ADD",
-	"SUB",
-	"MUL",
-	"DIV",
-	"MOD",
-	"INC",
-	"DEC",
-	"RAND",
-	"AND",
-	"OR",
-	"XOR",
-	"NOT",
-	"POP",
-	"SWAP",
-	"ROT",
-	"DUP",
-	"OVER",
-	"TUCK",
-	"PUSH",
-	"IFZERO",
-	"IFPOS",
-	"IFNEG",
-	"IFNZERO",
-	"IFNPOS",
-	"IFNNEG",
-	"GOTO",
-	"CALL",
-	"RET",
-	"STOP",
-	"FORWARD",
-	"TURN_AROUND",
-	"TURN_RIGHT",
-	"TURN_LEFT",
-	"POSITION",
-	"MY_UPHILL",
-	"THEIR_UPHILL",
-	"EMPTY_UPHILL",
-	"MY_DOWNHILL",
-	"THEIR_DOWNHILL",
-	"EMPTY_DOWNHILL",
-	"MINE",
-	"THEIRS",
-	"EMPTY",
-	"MY_GRADIENT",
-	"THEIR_GRADIENT",
-	"EMPTY_GRADIENT",
+        "NOP",
+        "LOAD",
+        "STORE",
+        "ADD",
+        "SUB",
+        "MUL",
+        "DIV",
+        "MOD",
+        "INC",
+        "DEC",
+        "RAND",
+        "AND",
+        "OR",
+        "XOR",
+        "NOT",
+        "POP",
+        "SWAP",
+        "ROT",
+        "DUP",
+        "OVER",
+        "TUCK",
+        "PUSH",
+        "IFZERO",
+        "IFPOS",
+        "IFNEG",
+        "IFNZERO",
+        "IFNPOS",
+        "IFNNEG",
+        "GOTO",
+        "CALL",
+        "RET",
+        "STOP",
+        "FORWARD",
+        "TURN_AROUND",
+        "TURN_RIGHT",
+        "TURN_LEFT",
+        "POSITION",
+        "MY_UPHILL",
+        "THEIR_UPHILL",
+        "EMPTY_UPHILL",
+        "MY_DOWNHILL",
+        "THEIR_DOWNHILL",
+        "EMPTY_DOWNHILL",
+        "MINE",
+        "THEIRS",
+        "EMPTY",
+        "MY_GRADIENT",
+        "THEIR_GRADIENT",
+        "EMPTY_GRADIENT",
     }; // End NAMES
 
     private final int stackDepth;
@@ -159,10 +159,10 @@ public class VM {
     private final Random random = new Random();
 
     VM(int stackDepth, int callstackDepth, int memorySize, int maxCycles) {
-	this.stackDepth     = stackDepth;
-	this.callstackDepth = callstackDepth;
-	this.memorySize     = memorySize;
-	this.maxCycles      = maxCycles;
+        this.stackDepth     = stackDepth;
+        this.callstackDepth = callstackDepth;
+        this.memorySize     = memorySize;
+        this.maxCycles      = maxCycles;
     }
 
 
@@ -178,42 +178,42 @@ public class VM {
      */
     public static class Op implements Comparable<Op> {
 
-	public final byte opcode;
-	public final int address;
+        public final byte opcode;
+        public final int address;
 
-	public int operand;
-	public Op next;  // Always the next instruction in the bytecode
-	public Op next2; // The other sucessor for branching and jumping instructions.
+        public int operand;
+        public Op next;  // Always the next instruction in the bytecode
+        public Op next2; // The other sucessor for branching and jumping instructions.
 
-	Op(byte opcode, int address) {
-	    this.opcode  = opcode;
-	    this.address = address;
-	}
+        Op(byte opcode, int address) {
+            this.opcode  = opcode;
+            this.address = address;
+        }
 
-	public int compareTo(Op other) {
-	    return this.address - other.address;
-	}
+        public int compareTo(Op other) {
+            return this.address - other.address;
+        }
 
-	public boolean takesOperand() {
-	    // Opcodes are arranged to have all the instructions with
-	    // operands consecutive, making this more efficient.
-	    return PUSH <= opcode && opcode <= CALL;
-	}
+        public boolean takesOperand() {
+            // Opcodes are arranged to have all the instructions with
+            // operands consecutive, making this more efficient.
+            return PUSH <= opcode && opcode <= CALL;
+        }
 
-	private boolean isBranchOrJump() {
-	    return IFZERO <= opcode && opcode <= CALL;
-	}
+        private boolean isBranchOrJump() {
+            return IFZERO <= opcode && opcode <= CALL;
+        }
 
-	public String toString() {
-	    String name = NAMES[opcode];
-	    if (!takesOperand()) {
-		return name;
-	    } else if (isBranchOrJump()) {
-		return name + " <" + next2.address + ">";
-	    } else {
-		return name + " " + operand;
-	    }
-	}
+        public String toString() {
+            String name = NAMES[opcode];
+            if (!takesOperand()) {
+                return name;
+            } else if (isBranchOrJump()) {
+                return name + " <" + next2.address + ">";
+            } else {
+                return name + " " + operand;
+            }
+        }
 
     }
 
@@ -221,264 +221,264 @@ public class VM {
      * Compile bytecodes and return the Op object representing the first instruction.
      */
     public List<Op> compile(byte[] bytecodes) {
-	// We're going to collect the Ops so we can resolve jump
-	// targets. But in the end we only need to return the starting
-	// Op.
-	List<Op> ops = new ArrayList<Op>();
+        // We're going to collect the Ops so we can resolve jump
+        // targets. But in the end we only need to return the starting
+        // Op.
+        List<Op> ops = new ArrayList<Op>();
 
-	// Null object so we don't have to check previous == null all
-	// the time during the first loop.
-	Op previous = new Op(NOP,-1);
+        // Null object so we don't have to check previous == null all
+        // the time during the first loop.
+        Op previous = new Op(NOP,-1);
 
-	// First pass we pick out the actual opcodes and generate Op
-	// objects for each of them. For ops that take an in-bytecode
-	// operand (PUSH and all the branching ops) we just store it
-	// in operand as a number for now.
-	int i = 0;
-	while (i < bytecodes.length) {
-	    byte b = bytecodes[i++];
-	    if (isOpcode(b)) {
-		Op op = new Op(b, i - 1);
-		try {
-		    if (op.takesOperand()) {
-			op.operand = ((bytecodes[i++] & 0xff) << 8) | (bytecodes[i++] & 0xff);
-		    }
-		    ops.add(op);
-		    previous.next = op;
-		    previous      = op;
-		} catch (ArrayIndexOutOfBoundsException aioobe) {
-		    // Ended with op code for op with operand but not
-		    // enough bytes left. We'll just ignore that op.
-		}
-	    }
-	}
+        // First pass we pick out the actual opcodes and generate Op
+        // objects for each of them. For ops that take an in-bytecode
+        // operand (PUSH and all the branching ops) we just store it
+        // in operand as a number for now.
+        int i = 0;
+        while (i < bytecodes.length) {
+            byte b = bytecodes[i++];
+            if (isOpcode(b)) {
+                Op op = new Op(b, i - 1);
+                try {
+                    if (op.takesOperand()) {
+                        op.operand = ((bytecodes[i++] & 0xff) << 8) | (bytecodes[i++] & 0xff);
+                    }
+                    ops.add(op);
+                    previous.next = op;
+                    previous      = op;
+                } catch (ArrayIndexOutOfBoundsException aioobe) {
+                    // Ended with op code for op with operand but not
+                    // enough bytes left. We'll just ignore that op.
+                }
+            }
+        }
 
-	// Fill in next2 pointers by finding the first actual Op at an
-	// address >= to the address in the bytecode. We add a STOP
-	// instruction at the end of the list of ops and then clamp
-	// the possible addresses so that anything that jumps past the
-	// end of the bytecodes will instead jump to the STOP.
-	ops.add(new Op(STOP, bytecodes.length));
-	for (Op op: ops) {
-	    if (op.isBranchOrJump()) {
-		op.next2 = findTargetOp(Math.min(op.operand, bytecodes.length), ops);
-	    }
-	}
-	return ops;
+        // Fill in next2 pointers by finding the first actual Op at an
+        // address >= to the address in the bytecode. We add a STOP
+        // instruction at the end of the list of ops and then clamp
+        // the possible addresses so that anything that jumps past the
+        // end of the bytecodes will instead jump to the STOP.
+        ops.add(new Op(STOP, bytecodes.length));
+        for (Op op: ops) {
+            if (op.isBranchOrJump()) {
+                op.next2 = findTargetOp(Math.min(op.operand, bytecodes.length), ops);
+            }
+        }
+        return ops;
     }
 
     private Op findTargetOp(int address, List<Op> ops) {
-	int pos = Collections.binarySearch(ops, new Op(NOP, address));
-	return pos >= 0 ? ops.get(pos) : ops.get(-1 * (pos + 1));
+        int pos = Collections.binarySearch(ops, new Op(NOP, address));
+        return pos >= 0 ? ops.get(pos) : ops.get(-1 * (pos + 1));
     }
 
     private boolean isOpcode(byte b) {
-	// NOP is an opcode that execute actually can execute but we
-	// don't generate an Op for it. And everything greater than
-	// the last opcode is also a no-op.
-	return NOP < b && b <= RET;
+        // NOP is an opcode that execute actually can execute but we
+        // don't generate an Op for it. And everything greater than
+        // the last opcode is also a no-op.
+        return NOP < b && b <= RET;
     }
 
     public int execute(Op start, Board board, Color color, int startPosition, int startDirection) {
-	int[] stack    = new int[stackDepth];
-	Op[] callstack = new Op[callstackDepth];
-	int[] memory   = new int[memorySize];
-	int position   = startPosition;
-	int direction  = startDirection;
+        int[] stack    = new int[stackDepth];
+        Op[] callstack = new Op[callstackDepth];
+        int[] memory   = new int[memorySize];
+        int position   = startPosition;
+        int direction  = startDirection;
 
-	int tos        = 0;
-	int sp         = 0;
-	int csp        = 0;
-	int cycles     = 0;
+        int tos        = 0;
+        int sp         = 0;
+        int csp        = 0;
+        int cycles     = 0;
 
-	int tmp;
+        int tmp;
 
-	Op op = start;
+        Op op = start;
 
-	while (op != null) {
-	    if (cycles++ > maxCycles) break;
+        while (op != null) {
+            if (cycles++ > maxCycles) break;
 
-	    Op next = null;
+            Op next = null;
 
-	    switch (op.opcode) {
-	    case NOP:
-		break;
-	    case LOAD:
-		tos = memory[tos % memory.length];
-		break;
-	    case STORE:
-		memory[tos % memory.length] = stack[--sp];
-		tos = stack[--sp];
-		break;
-	    case ADD:
-		tos += stack[--sp];
-		break;
-	    case SUB:
-		tos -= stack[--sp];
-		break;
-	    case MUL:
-		tos *= stack[-sp];
-		break;
-	    case DIV:
-		tmp = stack[--sp];
-		tos = tmp == 0 ? 0 : tos / tmp;
-		break;
-	    case MOD:
-		tmp = stack[--sp];
-		tos = tmp == 0 ? 0 : tos % tmp;
-		break;
-	    case INC:
-		tos++;
-		break;
-	    case DEC:
-		tos--;
-		break;
-	    case RAND:
-		stack[sp++] = tos;
-		tos = random.nextInt();
-		break;
-	    case AND:
-		tos = tos & stack[--sp];
-		break;
-	    case OR:
-		tos = tos | stack[--sp];
-		break;
-	    case XOR:
-		tos = tos ^ stack[--sp];
-		break;
-	    case NOT:
-		tos = ~tos;
-		break;
-	    case POP:
-		tos = stack[--sp];
-		break;
-	    case SWAP:
-		tmp = tos;
-		tos = stack[sp - 1];
-		stack[sp - 1] = tmp;
-		break;
-	    case ROT:
-		tmp = stack[sp - 3];
-		stack[sp - 3] = stack[sp - 2];
-		stack[sp - 1] = tos;
-		tos = tmp;
-		break;
-	    case DUP:
-		stack[sp++] = tos;
-		break;
-	    case OVER:
-		stack[sp++] = tos;
-		tos = stack[sp - 2];
-		break;
-	    case TUCK:
-		stack[sp] = stack[sp - 1];
-		stack[sp - 1] = tos;
-		sp++;
-		break;
-	    case PUSH:
-		stack[sp++] = tos;
-		tos = op.operand;
-		break;
-	    case IFZERO:
-		next = tos == 0 ? op.next2 : op.next;
-		tos = stack[--sp];
-		break;
-	    case IFPOS:
-		next = tos > 0 ? op.next2 : op.next;
-		tos = stack[--sp];
-		break;
-	    case IFNEG:
-		next = tos < 0 ? op.next2 : op.next;
-		tos = stack[--sp];
-		break;
-	    case IFNZERO:
-		next = tos != 0 ? op.next2 : op.next;
-		tos = stack[--sp];
-		break;
-	    case IFNPOS:
-		next = tos <= 0 ? op.next2 : op.next;
-		tos = stack[--sp];
-		break;
-	    case IFNNEG:
-		next = tos >= 0 ? op.next2 : op.next;
-		tos = stack[--sp];
-		break;
-	    case GOTO:
-		next = op.next2;
-		break;
-	    case CALL:
-		callstack[csp++] = op.next;
-		next = op.next2;
-		break;
-	    case RET:
-		next = callstack[--csp];
-		break;
-	    case STOP:
-		return position;
-	    case FORWARD:
-		// Implement
-		break;
-	    case TURN_AROUND:
-		direction = (direction + 2) % 4;
-		break;
-	    case TURN_RIGHT:
-		direction = (direction + 1) % 4;
-		break;
-	    case TURN_LEFT:
-		// Not -1 because of % actually being rem not mod.
-		direction = (direction + 3) % 4;
-		break;
-	    case POSITION:
-		stack[sp++] = tos;
-		tos = position;
-		break;
-	    case MY_UPHILL:
-		// Implement
-		break;
-	    case THEIR_UPHILL:
-		// Implement
-		break;
-	    case EMPTY_UPHILL:
-		// Implement
-		break;
-	    case MY_DOWNHILL:
-		// Implement
-		break;
-	    case THEIR_DOWNHILL:
-		// Implement
-		break;
-	    case EMPTY_DOWNHILL:
-		// Implement
-		break;
-	    case MINE:
-		stack[sp++] = tos;
-		tos = board.mine(color);
-		break;
-	    case THEIRS:
-		stack[sp++] = tos;
-		tos = board.theirs(color);
-		break;
-	    case EMPTY:
-		stack[sp++] = tos;
-		tos = board.empty(color);
-		break;
-	    case MY_GRADIENT:
-		// Implement
-		break;
-	    case THEIR_GRADIENT:
-		// Implement
-		break;
-	    case EMPTY_GRADIENT:
-		// Implement
-		break;
-	    default:
-		throw new RuntimeException("Illegal opcode: " + op.opcode);
-	    }
-	    // Default case, if next hasn't been set, is to simply
-	    // move to next instruction.
-	    op = next != null ? next : op.next;
-	}
-	return position;
+            switch (op.opcode) {
+            case NOP:
+                break;
+            case LOAD:
+                tos = memory[tos % memory.length];
+                break;
+            case STORE:
+                memory[tos % memory.length] = stack[--sp];
+                tos = stack[--sp];
+                break;
+            case ADD:
+                tos += stack[--sp];
+                break;
+            case SUB:
+                tos -= stack[--sp];
+                break;
+            case MUL:
+                tos *= stack[-sp];
+                break;
+            case DIV:
+                tmp = stack[--sp];
+                tos = tmp == 0 ? 0 : tos / tmp;
+                break;
+            case MOD:
+                tmp = stack[--sp];
+                tos = tmp == 0 ? 0 : tos % tmp;
+                break;
+            case INC:
+                tos++;
+                break;
+            case DEC:
+                tos--;
+                break;
+            case RAND:
+                stack[sp++] = tos;
+                tos = random.nextInt();
+                break;
+            case AND:
+                tos = tos & stack[--sp];
+                break;
+            case OR:
+                tos = tos | stack[--sp];
+                break;
+            case XOR:
+                tos = tos ^ stack[--sp];
+                break;
+            case NOT:
+                tos = ~tos;
+                break;
+            case POP:
+                tos = stack[--sp];
+                break;
+            case SWAP:
+                tmp = tos;
+                tos = stack[sp - 1];
+                stack[sp - 1] = tmp;
+                break;
+            case ROT:
+                tmp = stack[sp - 3];
+                stack[sp - 3] = stack[sp - 2];
+                stack[sp - 1] = tos;
+                tos = tmp;
+                break;
+            case DUP:
+                stack[sp++] = tos;
+                break;
+            case OVER:
+                stack[sp++] = tos;
+                tos = stack[sp - 2];
+                break;
+            case TUCK:
+                stack[sp] = stack[sp - 1];
+                stack[sp - 1] = tos;
+                sp++;
+                break;
+            case PUSH:
+                stack[sp++] = tos;
+                tos = op.operand;
+                break;
+            case IFZERO:
+                next = tos == 0 ? op.next2 : op.next;
+                tos = stack[--sp];
+                break;
+            case IFPOS:
+                next = tos > 0 ? op.next2 : op.next;
+                tos = stack[--sp];
+                break;
+            case IFNEG:
+                next = tos < 0 ? op.next2 : op.next;
+                tos = stack[--sp];
+                break;
+            case IFNZERO:
+                next = tos != 0 ? op.next2 : op.next;
+                tos = stack[--sp];
+                break;
+            case IFNPOS:
+                next = tos <= 0 ? op.next2 : op.next;
+                tos = stack[--sp];
+                break;
+            case IFNNEG:
+                next = tos >= 0 ? op.next2 : op.next;
+                tos = stack[--sp];
+                break;
+            case GOTO:
+                next = op.next2;
+                break;
+            case CALL:
+                callstack[csp++] = op.next;
+                next = op.next2;
+                break;
+            case RET:
+                next = callstack[--csp];
+                break;
+            case STOP:
+                return position;
+            case FORWARD:
+                // Implement
+                break;
+            case TURN_AROUND:
+                direction = (direction + 2) % 4;
+                break;
+            case TURN_RIGHT:
+                direction = (direction + 1) % 4;
+                break;
+            case TURN_LEFT:
+                // Not -1 because of % actually being rem not mod.
+                direction = (direction + 3) % 4;
+                break;
+            case POSITION:
+                stack[sp++] = tos;
+                tos = position;
+                break;
+            case MY_UPHILL:
+                // Implement
+                break;
+            case THEIR_UPHILL:
+                // Implement
+                break;
+            case EMPTY_UPHILL:
+                // Implement
+                break;
+            case MY_DOWNHILL:
+                // Implement
+                break;
+            case THEIR_DOWNHILL:
+                // Implement
+                break;
+            case EMPTY_DOWNHILL:
+                // Implement
+                break;
+            case MINE:
+                stack[sp++] = tos;
+                tos = board.mine(color);
+                break;
+            case THEIRS:
+                stack[sp++] = tos;
+                tos = board.theirs(color);
+                break;
+            case EMPTY:
+                stack[sp++] = tos;
+                tos = board.empty(color);
+                break;
+            case MY_GRADIENT:
+                // Implement
+                break;
+            case THEIR_GRADIENT:
+                // Implement
+                break;
+            case EMPTY_GRADIENT:
+                // Implement
+                break;
+            default:
+                throw new RuntimeException("Illegal opcode: " + op.opcode);
+            }
+            // Default case, if next hasn't been set, is to simply
+            // move to next instruction.
+            op = next != null ? next : op.next;
+        }
+        return position;
     }
 
     // [1] see http://galileo.phys.virginia.edu/classes/551.jvn.fall01/primer.htm#param)
