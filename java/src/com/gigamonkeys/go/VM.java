@@ -80,24 +80,13 @@ public class VM {
     public final static byte TURN_LEFT      = 35;
     public final static byte POSITION       = 36;
 
-    // Turn in a particular direction based on the gradients overlayed
-    // on the board. E.g. MY_UPHILL picks the neighboring point with
-    // the maximum MY gradient value (or a random one if there are
-    // ties)
-    public final static byte MY_UPHILL      = 37;
-    public final static byte THEIR_UPHILL   = 38;
-    public final static byte EMPTY_UPHILL   = 39;
-    public final static byte MY_DOWNHILL    = 40;
-    public final static byte THEIR_DOWNHILL = 41;
-    public final static byte EMPTY_DOWNHILL = 42;
-
     // Perception ops
-    public final static byte MINE           = 43;
-    public final static byte THEIRS         = 44;
-    public final static byte EMPTY          = 45;
-    public final static byte MY_GRADIENT    = 46;
-    public final static byte THEIR_GRADIENT = 47;
-    public final static byte EMPTY_GRADIENT = 48;
+    public final static byte MINE           = 37;
+    public final static byte THEIRS         = 38;
+    public final static byte EMPTY          = 39;
+    public final static byte MINE_GRADIENT  = 40;
+    public final static byte THEIR_GRADIENT = 41;
+    public final static byte EMPTY_GRADIENT = 42;
 
 
     public final static String[] NAMES = {
@@ -138,19 +127,13 @@ public class VM {
         "TURN_RIGHT",
         "TURN_LEFT",
         "POSITION",
-        "MY_UPHILL",
-        "THEIR_UPHILL",
-        "EMPTY_UPHILL",
-        "MY_DOWNHILL",
-        "THEIR_DOWNHILL",
-        "EMPTY_DOWNHILL",
         "MINE",
         "THEIRS",
         "EMPTY",
-        "MY_GRADIENT",
+        "MINE_GRADIENT",
         "THEIR_GRADIENT",
         "EMPTY_GRADIENT",
-    }; // End NAMES
+    };
 
     private final int stackDepth;
     private final int callstackDepth;
@@ -164,7 +147,6 @@ public class VM {
         this.memorySize     = memorySize;
         this.maxCycles      = maxCycles;
     }
-
 
     /**
      * The representation of an actual Op. The compile function will
@@ -214,7 +196,6 @@ public class VM {
                 return name + " " + operand;
             }
         }
-
     }
 
     /**
@@ -279,20 +260,36 @@ public class VM {
         return NOP < b && b <= RET;
     }
 
-    public int execute(Op start, Board board, Color color, int position, int direction) {
-        int[] stack    = new int[stackDepth];
-        Op[] callstack = new Op[callstackDepth];
-        int[] memory   = new int[memorySize];
-        int size       = board.size;
+    public int execute(Op start,
+                       Board board,
+                       Color color,
+                       int position,
+                       int direction,
+                       int[] mine,
+                       int[] theirs,
+                       int[] empty,
+                       int[] mineGradient,
+                       int[] theirsGradient,
+                       int[] emptyGradient)
 
+    {
         int tos        = 0;
         int sp         = 0;
         int csp        = 0;
         int cycles     = 0;
 
+        int[] stack    = new int[stackDepth];
+        Op[] callstack = new Op[callstackDepth];
+        int[] memory   = new int[memorySize];
+        int size       = board.size;
+
+
+
         int tmp;
 
         Op op = start;
+
+        // TODO: either check for stack overflow/underflow or trap it.
 
         while (op != null) {
             if (cycles++ > maxCycles) break;
@@ -444,44 +441,29 @@ public class VM {
                 stack[sp++] = tos;
                 tos = position;
                 break;
-            case MY_UPHILL:
-                // Implement
-                break;
-            case THEIR_UPHILL:
-                // Implement
-                break;
-            case EMPTY_UPHILL:
-                // Implement
-                break;
-            case MY_DOWNHILL:
-                // Implement
-                break;
-            case THEIR_DOWNHILL:
-                // Implement
-                break;
-            case EMPTY_DOWNHILL:
-                // Implement
-                break;
             case MINE:
                 stack[sp++] = tos;
-                tos = board.mine(color);
+                tos = mine[position];
                 break;
             case THEIRS:
                 stack[sp++] = tos;
-                tos = board.theirs(color);
+                tos = theirs[position];
                 break;
             case EMPTY:
                 stack[sp++] = tos;
-                tos = board.empty(color);
+                tos = empty[position];
                 break;
-            case MY_GRADIENT:
-                // Implement
+            case MINE_GRADIENT:
+                stack[sp++] = tos;
+                tos = mineGradient[position];
                 break;
             case THEIR_GRADIENT:
-                // Implement
+                stack[sp++] = tos;
+                tos = theirsGradient[position];
                 break;
             case EMPTY_GRADIENT:
-                // Implement
+                stack[sp++] = tos;
+                tos = emptyGradient[position];
                 break;
             default:
                 throw new RuntimeException("Illegal opcode: " + op.opcode);

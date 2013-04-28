@@ -22,5 +22,8 @@ clean:
 tidy:
 	find . -name '*~' -exec rm {} \;
 
+vm:
+	./vm.pl java/src/com/gigamonkeys/go/VM.java
+
 test: all
 	./critters 19

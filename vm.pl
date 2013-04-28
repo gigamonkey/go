@@ -16,7 +16,7 @@ my $current_case;
 
 my $const_pat    = qr/^(\s+public final static byte ([A-Z_]+))\s+=\s+\d+;/;
 my $names_start  = qr/^\s+public final static String\[\] NAMES = {/;
-my $names_end    = qr/}; \/\/ End NAMES/;
+my $names_end    = qr/^\s+};/;
 my $switch_start = qr/^\s+switch \(op\.opcode\) {/;
 my $switch_end   = qr/^\s+default:/;
 my $case         = qr/^\s+case ([A-Z_]+):/;
@@ -67,7 +67,8 @@ while (<>) {
             $current_case = $1;
             $cases{$current_case} = [];
         } elsif (/$switch_end/) {
-            dump_cases($_);
+            dump_cases();
+            print;
             change_state('default');
         } else {
             push @{$cases{$current_case}}, $_;
@@ -114,7 +115,6 @@ sub dump_names {
 }
 
 sub dump_cases {
-    my ($end) = @_;
     my %dumped = ();
     foreach my $line (@lines) {
         if ($line =~ $const_pat) {
@@ -137,20 +137,17 @@ sub dump_cases {
             }
         }
     }
-    print $end;
-    print " " x 12;
-    print "/* OLD OPCODES:\n";
     foreach my $case (keys %cases) {
         unless ($dumped{$case}) {
             print " " x 12;
-            print "case $case:\n";
+            print "// case $case:\n";
             foreach my $line (@{$cases{$case}}) {
-                print $line;
+                $line =~ s/^\s+//;
+                print " " x 12;
+                print "//    $line";
             }
         }
     }
-    print " " x 12;
-    print "*/\n";
 }
 
 
