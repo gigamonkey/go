@@ -3,6 +3,7 @@ package com.gigamonkeys.go;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 /*
  * Copyright (c) 2013 Peter Seibel
@@ -155,6 +156,7 @@ public class VM {
     private final int callstackDepth;
     private final int memorySize;
     private final int maxCycles;
+    private final Random random = new Random();
 
     VM(int stackDepth, int callstackDepth, int memorySize, int maxCycles) {
 	this.stackDepth     = stackDepth;
@@ -277,11 +279,12 @@ public class VM {
 	return NOP < b && b <= RET;
     }
 
-    public int execute(Op start, Board board, Color color, int startPosition) {
+    public int execute(Op start, Board board, Color color, int startPosition, int startDirection) {
 	int[] stack    = new int[stackDepth];
 	Op[] callstack = new Op[callstackDepth];
 	int[] memory   = new int[memorySize];
 	int position   = startPosition;
+	int direction  = startDirection;
 
 	int tos        = 0;
 	int sp         = 0;
@@ -331,7 +334,8 @@ public class VM {
 		tos--;
 		break;
 	    case RAND:
-		// Implement
+		stack[sp++] = tos;
+		tos = random.nextInt();
 		break;
 	    case AND:
 		tos = tos & stack[--sp];
@@ -415,13 +419,14 @@ public class VM {
 		// Implement
 		break;
 	    case TURN_AROUND:
-		// Implement
+		direction = (direction + 2) % 4;
 		break;
 	    case TURN_RIGHT:
-		// Implement
+		direction = (direction + 1) % 4;
 		break;
 	    case TURN_LEFT:
-		// Implement
+		// Not -1 because of % actually being rem not mod.
+		direction = (direction + 3) % 4;
 		break;
 	    case POSITION:
 		stack[sp++] = tos;
