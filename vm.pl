@@ -14,12 +14,12 @@ my @lines = ();
 my %cases = ();
 my $current_case;
 
-my $const_pat    = qr/^(\s+public final static byte ([A-Z_]+))\s+=\s+\d+;/;
+my $const_pat    = qr/^(\s+public final static byte ([A-Z][A-Z0-9_]+))\s+=\s+\d+;/;
 my $names_start  = qr/^\s+public final static String\[\] NAMES = {/;
 my $names_end    = qr/^\s+};/;
 my $switch_start = qr/^\s+switch \(op\.opcode\) {/;
 my $switch_end   = qr/^\s+default:/;
-my $case         = qr/^\s+case ([A-Z_]+):/;
+my $case         = qr/^\s+case ([A-Z][A-Z0-9_]+):/;
 
 # States:
 #  - before first opcode: just print lines
@@ -123,7 +123,7 @@ sub dump_cases {
             print "case $2:\n";
             if (defined $cases{$2}) {
                 my @code = @{$cases{$2}};
-                if ($#code == 0) {
+                if ($#code == 0 and $2 ne 'NOP' and $2 ne 'STOP') {
                     unshift @code, (" " x 16) . "// Implement\n";
                 }
                 foreach my $line (@code) {

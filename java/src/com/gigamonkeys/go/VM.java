@@ -46,47 +46,63 @@ public class VM {
     public final static byte DEC            = 9;
     public final static byte RAND           = 10;
 
-    // Logic ops
-    public final static byte AND            = 11;
-    public final static byte OR             = 12;
-    public final static byte XOR            = 13;
-    public final static byte NOT            = 14;
+    // Movement ops
+    public final static byte FORWARD        = 11;
+    public final static byte TURN_AROUND    = 12;
+    public final static byte TURN_RIGHT     = 13;
+    public final static byte TURN_LEFT      = 14;
+    public final static byte POSITION       = 15;
 
-    // Stack ops [1]
-    public final static byte POP            = 15;
-    public final static byte SWAP           = 16;
-    public final static byte ROT            = 17;
-    public final static byte DUP            = 18;
-    public final static byte OVER           = 19;
-    public final static byte TUCK           = 20;
-    public final static byte PUSH           = 21;
+    // Logic ops -- kick it CL style.
+    public final static byte BOOLE_1        = 16;
+    public final static byte BOOLE_2        = 17;
+    public final static byte BOOLE_ANDC1    = 18;
+    public final static byte BOOLE_ANDC2    = 19;
+    public final static byte BOOLE_AND      = 20;
+    public final static byte BOOLE_C1       = 21;
+    public final static byte BOOLE_C2       = 22;
+    public final static byte BOOLE_CLR      = 23;
+    public final static byte BOOLE_EQV      = 24;
+    public final static byte BOOLE_IOR      = 25;
+    public final static byte BOOLE_NAND     = 26;
+    public final static byte BOOLE_NOR      = 27;
+    public final static byte BOOLE_ORC1     = 28;
+    public final static byte BOOLE_ORC2     = 29;
+    public final static byte BOOLE_SET      = 30;
+    public final static byte BOOLE_XOR      = 31;
+
+    // And this one, that doesn't consume two stack items.
+    public final static byte NOT            = 32;
+
+    // Stack ops -- kick it Forth Style[1]
+    public final static byte POP            = 33;
+    public final static byte SWAP           = 34;
+    public final static byte ROT            = 35;
+    public final static byte DUP            = 36;
+    public final static byte OVER           = 37;
+    public final static byte TUCK           = 38;
+    public final static byte PUSH           = 39;
 
     // Flow control ops
-    public final static byte IFZERO         = 22;
-    public final static byte IFPOS          = 23;
-    public final static byte IFNEG          = 24;
-    public final static byte IFNZERO        = 25;
-    public final static byte IFNPOS         = 26;
-    public final static byte IFNNEG         = 27;
-    public final static byte GOTO           = 28;
-    public final static byte CALL           = 29;
-    public final static byte RET            = 30;
-    public final static byte STOP           = 31;
+    public final static byte IFZERO         = 40;
+    public final static byte IFPOS          = 41;
+    public final static byte IFNEG          = 42;
+    public final static byte IFNZERO        = 43;
+    public final static byte IFNPOS         = 44;
+    public final static byte IFNNEG         = 45;
+    public final static byte GOTO           = 46;
+    public final static byte CALL           = 47;
+    public final static byte RET            = 48;
+    public final static byte STOP           = 49;
 
-    // Movement ops
-    public final static byte FORWARD        = 32;
-    public final static byte TURN_AROUND    = 33;
-    public final static byte TURN_RIGHT     = 34;
-    public final static byte TURN_LEFT      = 35;
-    public final static byte POSITION       = 36;
 
     // Perception ops
-    public final static byte MINE           = 37;
-    public final static byte THEIRS         = 38;
-    public final static byte EMPTY          = 39;
-    public final static byte MINE_GRADIENT  = 40;
-    public final static byte THEIR_GRADIENT = 41;
-    public final static byte EMPTY_GRADIENT = 42;
+    public final static byte MINE           = 50;
+    public final static byte THEIRS         = 51;
+    public final static byte EMPTY          = 52;
+    public final static byte MINE_GRADIENT  = 53;
+    public final static byte THEIR_GRADIENT = 54;
+    public final static byte EMPTY_GRADIENT = 55;
 
 
     public final static String[] NAMES = {
@@ -101,9 +117,27 @@ public class VM {
         "INC",
         "DEC",
         "RAND",
-        "AND",
-        "OR",
-        "XOR",
+        "FORWARD",
+        "TURN_AROUND",
+        "TURN_RIGHT",
+        "TURN_LEFT",
+        "POSITION",
+        "BOOLE_1",
+        "BOOLE_2",
+        "BOOLE_ANDC1",
+        "BOOLE_ANDC2",
+        "BOOLE_AND",
+        "BOOLE_C1",
+        "BOOLE_C2",
+        "BOOLE_CLR",
+        "BOOLE_EQV",
+        "BOOLE_IOR",
+        "BOOLE_NAND",
+        "BOOLE_NOR",
+        "BOOLE_ORC1",
+        "BOOLE_ORC2",
+        "BOOLE_SET",
+        "BOOLE_XOR",
         "NOT",
         "POP",
         "SWAP",
@@ -122,11 +156,6 @@ public class VM {
         "CALL",
         "RET",
         "STOP",
-        "FORWARD",
-        "TURN_AROUND",
-        "TURN_RIGHT",
-        "TURN_LEFT",
-        "POSITION",
         "MINE",
         "THEIRS",
         "EMPTY",
@@ -333,13 +362,85 @@ public class VM {
                 stack[sp++] = tos;
                 tos = random.nextInt();
                 break;
-            case AND:
+            case FORWARD:
+                switch (direction) {
+                case 0: // North
+                    if (position >= size) position -= size;
+                    break;
+                case 1: // East
+                    if ((position % size) < (size - 1)) position += 1;
+                    break;
+                case 2: // South
+                    if (position < (size * (size - 1))) position += size;
+                    break;
+                case 3: // West
+                    if ((position % size) > 0) position -= 1;
+                    break;
+                }
+                break;
+            case TURN_AROUND:
+                direction = (direction + 2) % 4;
+                break;
+            case TURN_RIGHT:
+                direction = (direction + 1) % 4;
+                break;
+            case TURN_LEFT:
+                // Not -1 because of % actually being rem not mod.
+                direction = (direction + 3) % 4;
+                break;
+            case POSITION:
+                stack[sp++] = tos;
+                tos = position;
+                break;
+            case BOOLE_1:
+                sp--;
+                break;
+            case BOOLE_2:
+                tos = stack[--sp];
+                break;
+            case BOOLE_ANDC1:
+                tos = ~tos & stack[--sp];
+                break;
+            case BOOLE_ANDC2:
+                tos = tos & ~stack[--sp];
+                break;
+            case BOOLE_AND:
                 tos = tos & stack[--sp];
                 break;
-            case OR:
+            case BOOLE_C1:
+                tos = ~tos;
+                sp--;
+                break;
+            case BOOLE_C2:
+                tos = ~stack[--sp];
+                break;
+            case BOOLE_CLR:
+                tos = 0;
+                sp--;
+                break;
+            case BOOLE_EQV:
+                tos = ~(tos ^ stack[--sp]);
+                break;
+            case BOOLE_IOR:
                 tos = tos | stack[--sp];
                 break;
-            case XOR:
+            case BOOLE_NAND:
+                tos = ~(tos & stack[--sp]);
+                break;
+            case BOOLE_NOR:
+                tos = ~(tos | stack[--sp]);
+                break;
+            case BOOLE_ORC1:
+                tos = ~tos | stack[--sp];
+                break;
+            case BOOLE_ORC2:
+                tos = tos | ~stack[--sp];
+                break;
+            case BOOLE_SET:
+                tos = 0xffffffff;
+                sp--;
+                break;
+            case BOOLE_XOR:
                 tos = tos ^ stack[--sp];
                 break;
             case NOT:
@@ -411,36 +512,6 @@ public class VM {
                 break;
             case STOP:
                 return position;
-            case FORWARD:
-                switch (direction) {
-                case 0: // North
-                    if (position >= size) position -= size;
-                    break;
-                case 1: // East
-                    if ((position % size) < (size - 1)) position += 1;
-                    break;
-                case 2: // South
-                    if (position < (size * (size - 1))) position += size;
-                    break;
-                case 3: // West
-                    if ((position % size) > 0) position -= 1;
-                    break;
-                }
-                break;
-            case TURN_AROUND:
-                direction = (direction + 2) % 4;
-                break;
-            case TURN_RIGHT:
-                direction = (direction + 1) % 4;
-                break;
-            case TURN_LEFT:
-                // Not -1 because of % actually being rem not mod.
-                direction = (direction + 3) % 4;
-                break;
-            case POSITION:
-                stack[sp++] = tos;
-                tos = position;
-                break;
             case MINE:
                 stack[sp++] = tos;
                 tos = mine[position];
