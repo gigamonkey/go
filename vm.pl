@@ -38,40 +38,40 @@ my $state = 'default';
 
 while (<>) {
     if ($state eq 'default') {
-	if (/$const_pat/) {
-	    push @lines, $_;
-	    change_state('in_opcodes');
-	} elsif (/$switch_start/) {
-	    print;
-	    change_state('in_switch');
-	} else {
-	    print;
-	}
+        if (/$const_pat/) {
+            push @lines, $_;
+            change_state('in_opcodes');
+        } elsif (/$switch_start/) {
+            print;
+            change_state('in_switch');
+        } else {
+            print;
+        }
 
     } elsif ($state eq 'in_opcodes') {
-	if (/$names_start/) {
-	    dump_constants();
-	    print;
-	    change_state('in_names');
-	} else {
-	    push @lines, $_;
-	}
+        if (/$names_start/) {
+            dump_constants();
+            print;
+            change_state('in_names');
+        } else {
+            push @lines, $_;
+        }
     } elsif ($state eq 'in_names') {
-	if (/$names_end/) {
-	    dump_names();
-	    print;
-	    change_state('default');
-	}
+        if (/$names_end/) {
+            dump_names();
+            print;
+            change_state('default');
+        }
     } elsif ($state eq 'in_switch') {
-	if (/$case/) {
-	    $current_case = $1;
-	    $cases{$current_case} = [];
-	} elsif (/$switch_end/) {
-	    dump_cases($_);
-	    change_state('default');
-	} else {
-	    push @{$cases{$current_case}}, $_;
-	}
+        if (/$case/) {
+            $current_case = $1;
+            $cases{$current_case} = [];
+        } elsif (/$switch_end/) {
+            dump_cases($_);
+            change_state('default');
+        } else {
+            push @{$cases{$current_case}}, $_;
+        }
     }
 }
 
@@ -84,32 +84,32 @@ sub dump_constants {
     # Measure
     my $max = 0;
     foreach my $line (@lines) {
-	if ($line =~ $const_pat) {
-	    my $len = length($1);
-	    $max = $len > $max ? $len : $max;
-	    #print STDERR "max: $max\n";
-	}
+        if ($line =~ $const_pat) {
+            my $len = length($1);
+            $max = $len > $max ? $len : $max;
+            #print STDERR "max: $max\n";
+        }
     }
 
     # Output
     my $num = 0;
     foreach my $line (@lines) {
-	if ($line =~ $const_pat) {
-	    print $1;
-	    print " " x ($max - length($1));
-	    print " = $num;\n";
-	    $num++;
-	} else {
-	    print $line;
-	}
+        if ($line =~ $const_pat) {
+            print $1;
+            print " " x ($max - length($1));
+            print " = $num;\n";
+            $num++;
+        } else {
+            print $line;
+        }
     }
 }
 
 sub dump_names {
     foreach my $line (@lines) {
-	if ($line =~ $const_pat) {
-	    print "        \"$2\",\n";
-	}
+        if ($line =~ $const_pat) {
+            print "        \"$2\",\n";
+        }
     }
 }
 
@@ -117,37 +117,37 @@ sub dump_cases {
     my ($end) = @_;
     my %dumped = ();
     foreach my $line (@lines) {
-	if ($line =~ $const_pat) {
-	    $dumped{$2}++;
-	    print " " x 12;
-	    print "case $2:\n";
-	    if (defined $cases{$2}) {
-		my @code = @{$cases{$2}};
-		if ($#code == 0) {
-		    unshift @code, (" " x 16) . "// Implement\n";
-		}
-		foreach my $line (@code) {
-		    print $line;
-		}
-	    } else {
-		print " " x 16;
-		print "// Implement\n";
-		print " " x 16;
-		print "break;\n";
-	    }
-	}
+        if ($line =~ $const_pat) {
+            $dumped{$2}++;
+            print " " x 12;
+            print "case $2:\n";
+            if (defined $cases{$2}) {
+                my @code = @{$cases{$2}};
+                if ($#code == 0) {
+                    unshift @code, (" " x 16) . "// Implement\n";
+                }
+                foreach my $line (@code) {
+                    print $line;
+                }
+            } else {
+                print " " x 16;
+                print "// Implement\n";
+                print " " x 16;
+                print "break;\n";
+            }
+        }
     }
     print $end;
     print " " x 12;
     print "/* OLD OPCODES:\n";
     foreach my $case (keys %cases) {
-	unless ($dumped{$case}) {
-	    print " " x 12;
-	    print "case $case:\n";
-	    foreach my $line (@{$cases{$case}}) {
-		print $line;
-	    }
-	}
+        unless ($dumped{$case}) {
+            print " " x 12;
+            print "case $case:\n";
+            foreach my $line (@{$cases{$case}}) {
+                print $line;
+            }
+        }
     }
     print " " x 12;
     print "*/\n";

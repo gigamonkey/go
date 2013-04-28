@@ -19,22 +19,22 @@ public class GUI extends JFrame {
 
         final BoardPanel boardGUI = new BoardPanel(size);
 
-	SwingUtilities.invokeLater(new Runnable() {
-		public void run() { 
-		    JFrame frame = new JFrame("Go Critters");
-		    frame.setBounds(100, 100, 600, 600);
-		    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		    frame.add(boardGUI);
+        SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    JFrame frame = new JFrame("Go Critters");
+                    frame.setBounds(100, 100, 600, 600);
+                    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                    frame.add(boardGUI);
                     frame.setExtendedState(frame.getExtendedState() | JFrame.MAXIMIZED_BOTH);
-		    frame.setVisible(true);
-		}
-	    });
-                            
+                    frame.setVisible(true);
+                }
+            });
+
         Board b  = new Board(size);
         Random r = new Random();
 
         b.addBoardListener(boardGUI);
-        
+
         int passes = 0;
 
         //for (int i = 0; i < 10 * b.positions; i++) {
