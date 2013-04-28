@@ -312,236 +312,241 @@ public class VM {
         int[] memory   = new int[memorySize];
         int size       = board.size;
 
-
-
         int tmp;
 
         Op op = start;
 
-        // TODO: either check for stack overflow/underflow or trap it.
+        try {
+            while (op != null) {
+                if (cycles++ > maxCycles) break;
 
-        while (op != null) {
-            if (cycles++ > maxCycles) break;
+                Op next = null;
 
-            Op next = null;
-
-            switch (op.opcode) {
-            case NOP:
-                break;
-            case LOAD:
-                tos = memory[tos % memory.length];
-                break;
-            case STORE:
-                memory[tos % memory.length] = stack[--sp];
-                tos = stack[--sp];
-                break;
-            case ADD:
-                tos += stack[--sp];
-                break;
-            case SUB:
-                tos -= stack[--sp];
-                break;
-            case MUL:
-                tos *= stack[-sp];
-                break;
-            case DIV:
-                tmp = stack[--sp];
-                tos = tmp == 0 ? 0 : tos / tmp;
-                break;
-            case MOD:
-                tmp = stack[--sp];
-                tos = tmp == 0 ? 0 : tos % tmp;
-                break;
-            case INC:
-                tos++;
-                break;
-            case DEC:
-                tos--;
-                break;
-            case RAND:
-                stack[sp++] = tos;
-                tos = random.nextInt();
-                break;
-            case FORWARD:
-                switch (direction) {
-                case 0: // North
-                    if (position >= size) position -= size;
+                switch (op.opcode) {
+                case NOP:
                     break;
-                case 1: // East
-                    if ((position % size) < (size - 1)) position += 1;
+                case LOAD:
+                    tos = memory[tos % memory.length];
                     break;
-                case 2: // South
-                    if (position < (size * (size - 1))) position += size;
+                case STORE:
+                    memory[tos % memory.length] = stack[--sp];
+                    tos = stack[--sp];
                     break;
-                case 3: // West
-                    if ((position % size) > 0) position -= 1;
+                case ADD:
+                    tos += stack[--sp];
                     break;
+                case SUB:
+                    tos -= stack[--sp];
+                    break;
+                case MUL:
+                    tos *= stack[-sp];
+                    break;
+                case DIV:
+                    tmp = stack[--sp];
+                    tos = tmp == 0 ? 0 : tos / tmp;
+                    break;
+                case MOD:
+                    tmp = stack[--sp];
+                    tos = tmp == 0 ? 0 : tos % tmp;
+                    break;
+                case INC:
+                    tos++;
+                    break;
+                case DEC:
+                    tos--;
+                    break;
+                case RAND:
+                    stack[sp++] = tos;
+                    tos = random.nextInt();
+                    break;
+                case FORWARD:
+                    switch (direction) {
+                    case 0: // North
+                        if (position >= size) position -= size;
+                        break;
+                    case 1: // East
+                        if ((position % size) < (size - 1)) position += 1;
+                        break;
+                    case 2: // South
+                        if (position < (size * (size - 1))) position += size;
+                        break;
+                    case 3: // West
+                        if ((position % size) > 0) position -= 1;
+                        break;
+                    }
+                    break;
+                case TURN_AROUND:
+                    direction = (direction + 2) % 4;
+                    break;
+                case TURN_RIGHT:
+                    direction = (direction + 1) % 4;
+                    break;
+                case TURN_LEFT:
+                    // Not -1 because of % actually being rem not mod.
+                    direction = (direction + 3) % 4;
+                    break;
+                case POSITION:
+                    stack[sp++] = tos;
+                    tos = position;
+                    break;
+                case BOOLE_1:
+                    sp--;
+                    break;
+                case BOOLE_2:
+                    tos = stack[--sp];
+                    break;
+                case BOOLE_ANDC1:
+                    tos = ~tos & stack[--sp];
+                    break;
+                case BOOLE_ANDC2:
+                    tos = tos & ~stack[--sp];
+                    break;
+                case BOOLE_AND:
+                    tos = tos & stack[--sp];
+                    break;
+                case BOOLE_C1:
+                    tos = ~tos;
+                    sp--;
+                    break;
+                case BOOLE_C2:
+                    tos = ~stack[--sp];
+                    break;
+                case BOOLE_CLR:
+                    tos = 0;
+                    sp--;
+                    break;
+                case BOOLE_EQV:
+                    tos = ~(tos ^ stack[--sp]);
+                    break;
+                case BOOLE_IOR:
+                    tos = tos | stack[--sp];
+                    break;
+                case BOOLE_NAND:
+                    tos = ~(tos & stack[--sp]);
+                    break;
+                case BOOLE_NOR:
+                    tos = ~(tos | stack[--sp]);
+                    break;
+                case BOOLE_ORC1:
+                    tos = ~tos | stack[--sp];
+                    break;
+                case BOOLE_ORC2:
+                    tos = tos | ~stack[--sp];
+                    break;
+                case BOOLE_SET:
+                    tos = 0xffffffff;
+                    sp--;
+                    break;
+                case BOOLE_XOR:
+                    tos = tos ^ stack[--sp];
+                    break;
+                case NOT:
+                    tos = ~tos;
+                    break;
+                case POP:
+                    tos = stack[--sp];
+                    break;
+                case SWAP:
+                    tmp = tos;
+                    tos = stack[sp - 1];
+                    stack[sp - 1] = tmp;
+                    break;
+                case ROT:
+                    tmp = stack[sp - 3];
+                    stack[sp - 3] = stack[sp - 2];
+                    stack[sp - 1] = tos;
+                    tos = tmp;
+                    break;
+                case DUP:
+                    stack[sp++] = tos;
+                    break;
+                case OVER:
+                    stack[sp++] = tos;
+                    tos = stack[sp - 2];
+                    break;
+                case TUCK:
+                    stack[sp] = stack[sp - 1];
+                    stack[sp - 1] = tos;
+                    sp++;
+                    break;
+                case PUSH:
+                    stack[sp++] = tos;
+                    tos = op.operand;
+                    break;
+                case IFZERO:
+                    next = tos == 0 ? op.next2 : op.next;
+                    tos = stack[--sp];
+                    break;
+                case IFPOS:
+                    next = tos > 0 ? op.next2 : op.next;
+                    tos = stack[--sp];
+                    break;
+                case IFNEG:
+                    next = tos < 0 ? op.next2 : op.next;
+                    tos = stack[--sp];
+                    break;
+                case IFNZERO:
+                    next = tos != 0 ? op.next2 : op.next;
+                    tos = stack[--sp];
+                    break;
+                case IFNPOS:
+                    next = tos <= 0 ? op.next2 : op.next;
+                    tos = stack[--sp];
+                    break;
+                case IFNNEG:
+                    next = tos >= 0 ? op.next2 : op.next;
+                    tos = stack[--sp];
+                    break;
+                case GOTO:
+                    next = op.next2;
+                    break;
+                case CALL:
+                    callstack[csp++] = op.next;
+                    next = op.next2;
+                    break;
+                case RET:
+                    next = callstack[--csp];
+                    break;
+                case STOP:
+                    return position;
+                case MINE:
+                    stack[sp++] = tos;
+                    tos = mine[position];
+                    break;
+                case THEIRS:
+                    stack[sp++] = tos;
+                    tos = theirs[position];
+                    break;
+                case EMPTY:
+                    stack[sp++] = tos;
+                    tos = empty[position];
+                    break;
+                case MINE_GRADIENT:
+                    stack[sp++] = tos;
+                    tos = mineGradient[position];
+                    break;
+                case THEIR_GRADIENT:
+                    stack[sp++] = tos;
+                    tos = theirsGradient[position];
+                    break;
+                case EMPTY_GRADIENT:
+                    stack[sp++] = tos;
+                    tos = emptyGradient[position];
+                    break;
+                default:
+                    throw new RuntimeException("Illegal opcode: " + op.opcode);
                 }
-                break;
-            case TURN_AROUND:
-                direction = (direction + 2) % 4;
-                break;
-            case TURN_RIGHT:
-                direction = (direction + 1) % 4;
-                break;
-            case TURN_LEFT:
-                // Not -1 because of % actually being rem not mod.
-                direction = (direction + 3) % 4;
-                break;
-            case POSITION:
-                stack[sp++] = tos;
-                tos = position;
-                break;
-            case BOOLE_1:
-                sp--;
-                break;
-            case BOOLE_2:
-                tos = stack[--sp];
-                break;
-            case BOOLE_ANDC1:
-                tos = ~tos & stack[--sp];
-                break;
-            case BOOLE_ANDC2:
-                tos = tos & ~stack[--sp];
-                break;
-            case BOOLE_AND:
-                tos = tos & stack[--sp];
-                break;
-            case BOOLE_C1:
-                tos = ~tos;
-                sp--;
-                break;
-            case BOOLE_C2:
-                tos = ~stack[--sp];
-                break;
-            case BOOLE_CLR:
-                tos = 0;
-                sp--;
-                break;
-            case BOOLE_EQV:
-                tos = ~(tos ^ stack[--sp]);
-                break;
-            case BOOLE_IOR:
-                tos = tos | stack[--sp];
-                break;
-            case BOOLE_NAND:
-                tos = ~(tos & stack[--sp]);
-                break;
-            case BOOLE_NOR:
-                tos = ~(tos | stack[--sp]);
-                break;
-            case BOOLE_ORC1:
-                tos = ~tos | stack[--sp];
-                break;
-            case BOOLE_ORC2:
-                tos = tos | ~stack[--sp];
-                break;
-            case BOOLE_SET:
-                tos = 0xffffffff;
-                sp--;
-                break;
-            case BOOLE_XOR:
-                tos = tos ^ stack[--sp];
-                break;
-            case NOT:
-                tos = ~tos;
-                break;
-            case POP:
-                tos = stack[--sp];
-                break;
-            case SWAP:
-                tmp = tos;
-                tos = stack[sp - 1];
-                stack[sp - 1] = tmp;
-                break;
-            case ROT:
-                tmp = stack[sp - 3];
-                stack[sp - 3] = stack[sp - 2];
-                stack[sp - 1] = tos;
-                tos = tmp;
-                break;
-            case DUP:
-                stack[sp++] = tos;
-                break;
-            case OVER:
-                stack[sp++] = tos;
-                tos = stack[sp - 2];
-                break;
-            case TUCK:
-                stack[sp] = stack[sp - 1];
-                stack[sp - 1] = tos;
-                sp++;
-                break;
-            case PUSH:
-                stack[sp++] = tos;
-                tos = op.operand;
-                break;
-            case IFZERO:
-                next = tos == 0 ? op.next2 : op.next;
-                tos = stack[--sp];
-                break;
-            case IFPOS:
-                next = tos > 0 ? op.next2 : op.next;
-                tos = stack[--sp];
-                break;
-            case IFNEG:
-                next = tos < 0 ? op.next2 : op.next;
-                tos = stack[--sp];
-                break;
-            case IFNZERO:
-                next = tos != 0 ? op.next2 : op.next;
-                tos = stack[--sp];
-                break;
-            case IFNPOS:
-                next = tos <= 0 ? op.next2 : op.next;
-                tos = stack[--sp];
-                break;
-            case IFNNEG:
-                next = tos >= 0 ? op.next2 : op.next;
-                tos = stack[--sp];
-                break;
-            case GOTO:
-                next = op.next2;
-                break;
-            case CALL:
-                callstack[csp++] = op.next;
-                next = op.next2;
-                break;
-            case RET:
-                next = callstack[--csp];
-                break;
-            case STOP:
-                return position;
-            case MINE:
-                stack[sp++] = tos;
-                tos = mine[position];
-                break;
-            case THEIRS:
-                stack[sp++] = tos;
-                tos = theirs[position];
-                break;
-            case EMPTY:
-                stack[sp++] = tos;
-                tos = empty[position];
-                break;
-            case MINE_GRADIENT:
-                stack[sp++] = tos;
-                tos = mineGradient[position];
-                break;
-            case THEIR_GRADIENT:
-                stack[sp++] = tos;
-                tos = theirsGradient[position];
-                break;
-            case EMPTY_GRADIENT:
-                stack[sp++] = tos;
-                tos = emptyGradient[position];
-                break;
-            default:
-                throw new RuntimeException("Illegal opcode: " + op.opcode);
+                // Default case, if next hasn't been set, is to simply
+                // move to next instruction.
+                op = next != null ? next : op.next;
             }
-            // Default case, if next hasn't been set, is to simply
-            // move to next instruction.
-            op = next != null ? next : op.next;
+        } catch (ArrayIndexOutOfBoundsException aioobe) {
+            // Unless we've screwed something up, this can only happen
+            // when we overflow or underflow either the operand or
+            // call stack. So we'll just treat that as an unorthodox
+            // wy of stoping and return the current position. (This is
+            // because all other array accesses are constrained such
+            // that the indices should always--modulo bugs--be legit.)
         }
         return position;
     }
