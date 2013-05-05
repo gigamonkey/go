@@ -21,6 +21,7 @@ clean:
 
 tidy:
 	find . -name '*~' -exec rm {} \;
+	rm -f java/src/com/gigamonkeys/go/VM.java.bak
 
 vm:
 	./vm.pl java/src/com/gigamonkeys/go/VM.java

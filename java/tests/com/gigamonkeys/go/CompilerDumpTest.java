@@ -15,13 +15,12 @@ public class CompilerDumpTest {
     public static void main(String[] args) {
 
         byte[] genes = new Genetics().randomGenes(Integer.parseInt(args[0]));
-        
-        List<VM.Op> ops = new VM(0,0,0,0).compile(genes);
 
-        for (VM.Op op: ops) {
+        List<Op> ops = new VM(0,0,0,0).compile(genes);
+
+        for (Op op: ops) {
             System.out.println(op.address + ": " + op);
         }
     }
 
 }
-

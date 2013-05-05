@@ -15,6 +15,7 @@ import java.util.Random;
 public class Board {
 
     public final int size;
+    public final double komi;
     public final int positions;
     private final BitSet blackStones;
     private final BitSet whiteStones;
@@ -22,11 +23,16 @@ public class Board {
 
     private LinkedList<Position> previousPositions = new LinkedList<Position>();
 
-    public Board(int size) {
+    public Board(int size, double komi) {
         this.size        = size;
+        this.komi        = komi;
         this.positions   = size * size;
         this.blackStones = new BitSet(positions);
         this.whiteStones = new BitSet(positions);
+    }
+
+    public Board(int size) {
+        this(size, 6.5);
     }
 
     public void addBoardListener(BoardListener listener) {
@@ -90,6 +96,14 @@ public class Board {
         previousPositions.add(newPosition);
 
         fireBoardEvents(position, color, killed);
+    }
+
+    public Score score() {
+        int black    = blackStones.cardinality();
+        int white    = whiteStones.cardinality();
+        Color winner = black > (white + komi) ? Color.BLACK : Color.WHITE;
+        return new Score(winner, black, white);
+
     }
 
     private void fireBoardEvents(int position, Color color, BitSet killed) {

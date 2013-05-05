@@ -179,62 +179,12 @@ public class VM {
     }
 
     /**
-     * The representation of an actual Op. The compile function will
-     * convert a byte[] into a DAG of these and return the initial
-     * Op. The execute method will then take that Op and execute the
-     * DAG. Note that we use the operand field to hold the int value
-     * encoded in the two bytes following certain instructions but for
-     * all but the PUSH op, that operand is actually an address which
-     * the compiler translates into a direct link to the appropriate
-     * Op object and stores in the next2 field.
-     */
-    public static class Op implements Comparable<Op> {
-
-        public final byte opcode;
-        public final int address;
-
-        public int operand;
-        public Op next;  // Always the next instruction in the bytecode
-        public Op next2; // The other sucessor for branching and jumping instructions.
-
-        Op(byte opcode, int address) {
-            this.opcode  = opcode;
-            this.address = address;
-        }
-
-        public int compareTo(Op other) {
-            return this.address - other.address;
-        }
-
-        public boolean takesOperand() {
-            // Opcodes are arranged to have all the instructions with
-            // operands consecutive, making this more efficient.
-            return PUSH <= opcode && opcode <= CALL;
-        }
-
-        private boolean isBranchOrJump() {
-            return IFZERO <= opcode && opcode <= CALL;
-        }
-
-        public String toString() {
-            String name = NAMES[opcode];
-            if (!takesOperand()) {
-                return name;
-            } else if (isBranchOrJump()) {
-                return name + " <" + next2.address + ">";
-            } else {
-                return name + " " + operand;
-            }
-        }
-    }
-
-    /**
      * Compile bytecodes and return a list of Op objects. (The Ops are
      * themselves linked into a DAG so we only need the starting Op in
      * order to execute the code. But it's sometimes handy to have all
      * the ops in a list, say for dumping them out again.)
      */
-    public List<Op> compile(byte[] bytecodes) {
+    public static List<Op> compile(byte[] bytecodes) {
         // We're going to collect the Ops so we can resolve jump
         // targets. But in the end we only need to return the starting
         // Op.
@@ -281,12 +231,12 @@ public class VM {
         return ops;
     }
 
-    private Op findTargetOp(int address, List<Op> ops) {
+    private static Op findTargetOp(int address, List<Op> ops) {
         int pos = Collections.binarySearch(ops, new Op(NOP, address));
         return pos >= 0 ? ops.get(pos) : ops.get(-1 * (pos + 1));
     }
 
-    private boolean isOpcode(byte b) {
+    private static boolean isOpcode(byte b) {
         // NOP is an opcode that execute actually can execute but we
         // don't generate an Op for it. And everything greater than
         // the last opcode is also a no-op.
@@ -300,7 +250,7 @@ public class VM {
      * of the side to play and produce a GameContext object that has
      * all the information this method needs readily at hand.
      */
-    public int execute(Op op, int position, int direction, GameContext context) {
+    public int execute(Critter critter, GameContext context) {
         int tos        = 0;
         int sp         = 0;
         int csp        = 0;
@@ -312,6 +262,10 @@ public class VM {
 
         int tmp;
 
+        Op op         = critter.getCode();
+        int position  = critter.getPosition();
+        int direction = critter.getDirection();
+
         int size             = context.size;
         BitSet mine          = context.getMine();
         BitSet theirs        = context.getTheirs();
@@ -322,6 +276,7 @@ public class VM {
         int[] cornerGradient = context.getCornerGradient();
 
         try {
+            execute:
             while (op != null) {
                 if (cycles++ > maxCycles) break;
 
@@ -513,7 +468,7 @@ public class VM {
                     next = callstack[--csp];
                     break;
                 case STOP:
-                    return position;
+                    break execute;
                 case MINE:
                     stack[sp++] = tos;
                     tos = mine.get(position) ? 1 : 0;
@@ -557,6 +512,7 @@ public class VM {
             // because all other array accesses are constrained such
             // that the indices should always--modulo bugs--be legit.)
         }
+        critter.position(position, direction);
         return position;
     }
 
