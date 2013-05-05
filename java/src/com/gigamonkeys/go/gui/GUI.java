@@ -1,15 +1,18 @@
 package com.gigamonkeys.go.gui;
 
+import com.gigamonkeys.go.Board;
+import com.gigamonkeys.go.BoardEvent;
+import com.gigamonkeys.go.BoardListener;
+import com.gigamonkeys.go.Color;
+import com.gigamonkeys.go.Game;
+import com.gigamonkeys.go.IllegalMoveException;
+import com.gigamonkeys.go.Player;
+import com.gigamonkeys.go.RandomPlayer;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.util.Random;
 import javax.swing.*;
-
-import com.gigamonkeys.go.Board;
-import com.gigamonkeys.go.Color;
-import com.gigamonkeys.go.IllegalMoveException;
-
 
 public class GUI extends JFrame {
 
@@ -34,38 +37,17 @@ public class GUI extends JFrame {
         Random r = new Random();
 
         b.addBoardListener(boardGUI);
+        b.addBoardListener(new BoardListener() {
+                public void stoneAdded(BoardEvent be) {
+                    // Let the main thread take a break so the Swing
+                    // threads can do their thing and redraw.
+                    try { Thread.sleep(0, 1); } catch (InterruptedException ie) {}
+                }
+                public void stoneRemoved(BoardEvent be) {}
 
-        int passes = 0;
+            });
 
-        //for (int i = 0; i < 10 * b.positions; i++) {
-        long start = System.currentTimeMillis();
-        int moves = 0;
-        while (true) {
-            moves++;
-            if (move(b, moves % 2 == 0 ? Color.BLACK : Color.WHITE, r)) {
-                passes = 0;
-                try { Thread.sleep(1); } catch (InterruptedException ie) {}
-            } else {
-                if (++passes == 2) break;
-            }
-        }
-        long time = System.currentTimeMillis() - start;
+        new Game(new RandomPlayer(), new RandomPlayer(), b).run();
         System.out.println("Done.");
-        if (time > 1000) {
-            System.out.println(moves + " moves in " + (time/1000) + " seconds. (" + (moves/(time/1000)) + "m/s)");
-        }
-    }
-
-    private static boolean move(Board b, Color color, Random r) {
-        for (int i = 0; i < b.positions; i++) {
-            int p = r.nextInt(b.positions);
-            try {
-                b.placeStone(color, p);
-                return true;
-            } catch (IllegalMoveException ime) {
-                //System.out.println(ime);
-            }
-        }
-        return false;
     }
 }
