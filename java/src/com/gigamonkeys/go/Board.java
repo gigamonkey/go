@@ -11,7 +11,7 @@ import java.util.Random;
 /*
  * Implement the main rules of Go as far as what happens when stones
  * are put on the board.
- */ 
+ */
 public class Board {
 
     public final int size;
@@ -64,9 +64,9 @@ public class Board {
         friends.set(position);
 
         // Remove any neighboring enemy groups we killed .
-        BitSet killed = killed(position, friends, enemies); 
+        BitSet killed = killed(position, friends, enemies);
         enemies.andNot(killed);
-        
+
         Position newPosition = new Position(color, blackStones, whiteStones);
 
         // Check for Ko. Not actually implemented yet.
@@ -94,11 +94,12 @@ public class Board {
 
     private void fireBoardEvents(int position, Color color, BitSet killed) {
 
+        Color other = other(color);
         BoardEvent added = new BoardEvent(this, position, color);
         List<BoardEvent> removed = new ArrayList<BoardEvent>();
 
         for (int i = killed.nextSetBit(0); i != -1; i = killed.nextSetBit(i + 1)) {
-            removed.add(new BoardEvent(this, i, Color.EMPTY));
+            removed.add(new BoardEvent(this, i, other));
         }
 
         for (BoardListener listener: listeners) {
@@ -114,7 +115,7 @@ public class Board {
      * Get (possibly empty) set of stones killed by playing at position.
      */
     private BitSet killed(int position, BitSet friends, BitSet enemies) {
-        
+
         BitSet live = new BitSet(positions);
         BitSet dead = new BitSet(positions);
 
@@ -133,7 +134,7 @@ public class Board {
      * group is alive or the complete group if it is dead.
      */
     private Stones connectedTo (int position) {
-        
+
         BitSet stones            = new BitSet(positions);
         Queue<Integer> toProcess = new LinkedList<Integer>();
 
@@ -169,7 +170,7 @@ public class Board {
         // illegal. If not, then forget about the old white-to-play
         // move and remember the new-one. (The next move, by white,
         // will use the black-to-play.)
-        
+
         // Could also implement more complex "positional superko" rule
         // by keeping a list of every prior position (including
         // player-to-move) and checking the resutling position against
@@ -186,10 +187,18 @@ public class Board {
     }
 
     private Color color (int position) {
-        return 
+        return
             blackStones.get(position) ? Color.BLACK :
             whiteStones.get(position) ? Color.WHITE :
             Color.EMPTY;
+    }
+
+    private Color other(Color color) {
+        switch (color) {
+        case BLACK: return Color.WHITE;
+        case WHITE: return Color.BLACK;
+        default: throw new IllegalArgumentException("No other color for Empty.");
+        }
     }
 
     private BitSet friends (Color color) {
@@ -215,7 +224,7 @@ public class Board {
         empties.flip(0, positions);
         return empties;
     }
-    
+
     public boolean isEmpty(int position) {
         return !(blackStones.get(position) || whiteStones.get(position));
     }
@@ -236,7 +245,7 @@ public class Board {
 
 
     private static class Position {
-        
+
         private final Color justPlayed;
         private final BitSet blackStones;
         private final BitSet whiteStones;
@@ -246,7 +255,7 @@ public class Board {
             this.blackStones = (BitSet)blackStones.clone();
             this.whiteStones = (BitSet)whiteStones.clone();
         }
-        
+
         public boolean equals(Object other) {
             if (other instanceof Position) {
                 Position that = (Position)other;

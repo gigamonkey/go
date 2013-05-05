@@ -1,6 +1,7 @@
 package com.gigamonkeys.go;
 
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
@@ -102,6 +103,7 @@ public class VM {
     public final static byte MINE_GRADIENT  = 53;
     public final static byte THEIR_GRADIENT = 54;
     public final static byte EMPTY_GRADIENT = 55;
+    public final static byte CORNER_GRADIENT = 56;
 
     public final static String[] NAMES = {
         "NOP",
@@ -160,6 +162,7 @@ public class VM {
         "MINE_GRADIENT",
         "THEIR_GRADIENT",
         "EMPTY_GRADIENT",
+        "CORNER_GRADIENT",
     };
 
     private final int stackDepth;
@@ -287,19 +290,14 @@ public class VM {
         return NOP < b && b <= EMPTY_GRADIENT;
     }
 
-    public int execute(Op start,
-                       Board board,
-                       Color color,
-                       int position,
-                       int direction,
-                       int[] mine,
-                       int[] theirs,
-                       int[] empty,
-                       int[] mineGradient,
-                       int[] theirsGradient,
-                       int[] emptyGradient)
-
-    {
+    /*
+     * Execute the given code for a particular game state. Since we
+     * are going to run a whole bunch of critters for the same state,
+     * we'll take the actual state of the Board object and the color
+     * of the side to play and produce a GameContext object that has
+     * all the information this method needs readily at hand.
+     */
+    public int execute(Op op, int position, int direction, GameContext context) {
         int tos        = 0;
         int sp         = 0;
         int csp        = 0;
@@ -308,11 +306,17 @@ public class VM {
         int[] stack    = new int[stackDepth];
         Op[] callstack = new Op[callstackDepth];
         int[] memory   = new int[memorySize];
-        int size       = board.size;
 
         int tmp;
 
-        Op op = start;
+        int size             = context.size;
+        BitSet mine          = context.getMine();
+        BitSet theirs        = context.getTheirs();
+        BitSet empty         = context.getEmpty();
+        int[] mineGradient   = context.getMineGradient();
+        int[] theirsGradient  = context.getTheirsGradient();
+        int[] emptyGradient  = context.getEmptyGradinet();
+        int[] cornerGradient = context.getCornerGradient();
 
         try {
             while (op != null) {
@@ -509,15 +513,15 @@ public class VM {
                     return position;
                 case MINE:
                     stack[sp++] = tos;
-                    tos = mine[position];
+                    tos = mine.get(position) ? 1 : 0;
                     break;
                 case THEIRS:
                     stack[sp++] = tos;
-                    tos = theirs[position];
+                    tos = theirs.get(position) ? 1 : 0;
                     break;
                 case EMPTY:
                     stack[sp++] = tos;
-                    tos = empty[position];
+                    tos = empty.get(position) ? 1 : 0;
                     break;
                 case MINE_GRADIENT:
                     stack[sp++] = tos;
@@ -530,6 +534,10 @@ public class VM {
                 case EMPTY_GRADIENT:
                     stack[sp++] = tos;
                     tos = emptyGradient[position];
+                    break;
+                case CORNER_GRADIENT:
+                    stack[sp++] = tos;
+                    tos = cornerGradient[position];
                     break;
                 default:
                     throw new RuntimeException("Illegal opcode: " + op.opcode);
