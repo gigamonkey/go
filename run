@@ -1,0 +1,9 @@
+#!/bin/sh
+
+# Some useful options:
+# -verbose:gc
+
+class=$1
+shift
+
+java -cp java/class com.gigamonkeys.go.$class $*
