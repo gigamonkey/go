@@ -22,7 +22,7 @@ public class Board {
 
     private LinkedList<Position> previousPositions = new LinkedList<Position>();
 
-    public Board (int size) {
+    public Board(int size) {
         this.size        = size;
         this.positions   = size * size;
         this.blackStones = new BitSet(positions);
@@ -37,7 +37,7 @@ public class Board {
      * Get the list of neighboring points. Either two, three, or four
      * depending whether position is a corner, edge, or middle point.
      */
-    public List<Integer> neighbors (int position) {
+    public List<Integer> neighbors(int position) {
 
         int x   = position % size;
         int y   = position / size;
@@ -51,7 +51,7 @@ public class Board {
         return neighbors;
     }
 
-    public void placeStone (Color color, int position) {
+    public void placeStone(Color color, int position) {
 
         if (!isEmpty(position)) {
             throw new IllegalMoveException("Position occpupied.", position);
@@ -133,7 +133,7 @@ public class Board {
      * returning either the set of stones needed to determine that the
      * group is alive or the complete group if it is dead.
      */
-    private Stones connectedTo (int position) {
+    private Stones connectedTo(int position) {
 
         BitSet stones            = new BitSet(positions);
         Queue<Integer> toProcess = new LinkedList<Integer>();
@@ -158,7 +158,7 @@ public class Board {
         return dead(stones);
     }
 
-    private boolean isKo (Position newPosition) {
+    private boolean isKo(Position newPosition) {
 
         // Simple ko rule: playing the current move cannot create the
         // same position as our opponent faced after our prevous move.
@@ -186,7 +186,7 @@ public class Board {
         }
     }
 
-    private Color color (int position) {
+    private Color color(int position) {
         return
             blackStones.get(position) ? Color.BLACK :
             whiteStones.get(position) ? Color.WHITE :
@@ -201,7 +201,7 @@ public class Board {
         }
     }
 
-    private BitSet friends (Color color) {
+    private BitSet friends(Color color) {
         switch (color) {
         case BLACK: return blackStones;
         case WHITE: return whiteStones;
@@ -209,7 +209,7 @@ public class Board {
         }
     }
 
-    private BitSet enemies (Color color) {
+    private BitSet enemies(Color color) {
         switch (color) {
         case BLACK: return whiteStones;
         case WHITE: return blackStones;
@@ -218,7 +218,7 @@ public class Board {
     }
 
 
-    public BitSet empties () {
+    public BitSet empties() {
         BitSet empties = (BitSet)blackStones.clone();
         empties.or(whiteStones);
         empties.flip(0, positions);

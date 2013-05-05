@@ -10,23 +10,23 @@ import java.util.Random;
  * Code for manipulating genetic material represented as byte arrays.
  */
 public class Genetics {
-    
+
     private final Random random = new Random();
 
     // The parameters that control mutation and crossing. There are a
     // number of ways we can mutate both during copying and after the
     // genomes have been split into chunks.
-    
+
     private double bitMutationRate  = 0.001;
     private double byteMutationRate = 0.0001;
     private double copyMutationRate = 0.1;
     private int maxCopyMutation     = 20;
-  
+
     /**
      * Number of chunks we split the gene into for crossing.
      */
     private int chunks = 10;
-    
+
     /**
      * Get a random string of genetic material of the given length.
      */
@@ -35,12 +35,12 @@ public class Genetics {
         random.nextBytes(genes);
         return genes;
     }
-    
+
     /**
      * Breed two sets of genes to prodce the given number of
      * offspring.
      */
-    public List<byte[]> breed (byte[] p1, byte[] p2, int offspring) {
+    public List<byte[]> breed(byte[] p1, byte[] p2, int offspring) {
 
         List<byte[]> children = new ArrayList<byte[]>(offspring);
 
@@ -58,10 +58,10 @@ public class Genetics {
     }
 
     static class GeneBuilder {
-        
+
         private byte[] genes;
 
-        private int idx = 0; 
+        private int idx = 0;
 
         GeneBuilder(int size) { this.genes = new byte[size]; }
 
@@ -78,12 +78,12 @@ public class Genetics {
             System.arraycopy(other, pos, genes, idx, length);
             idx += length;
         }
-        
+
         public void insert(byte[] other) {
             copy(other, 0, other.length);
         }
-        
-        public void permute(byte[] other, int pos, int length, Random random) { 
+
+        public void permute(byte[] other, int pos, int length, Random random) {
             maybeExpand(length);
             // In place Fisher-Yates shuffle.
             for (int i = 0; i < length; i++) {
@@ -100,7 +100,7 @@ public class Genetics {
         }
     }
 
-    private byte[] copyWithMutations (byte[] genes) {
+    private byte[] copyWithMutations(byte[] genes) {
 
         GeneBuilder newgenes = new GeneBuilder(genes.length);
 
@@ -110,7 +110,7 @@ public class Genetics {
         while (i < genes.length) {
 
             if (random.nextDouble() < copyMutationRate) {
-                
+
                 newgenes.copy(genes, prev, i - prev);
                 prev = i;
 
@@ -137,7 +137,7 @@ public class Genetics {
                 i++;
             }
         }
-        
+
         if (prev < i) {
             newgenes.copy(genes, prev, i - prev);
         }
@@ -183,23 +183,23 @@ public class Genetics {
 
         return splits;
     }
-    
+
     /**
      * Given two lists of chunks, cross them by taking odd number
      * chunks from the first list and even number chunks from the
      * second list.
      */
-    private byte[] cross (List<byte[]> chunks1, List<byte[]> chunks2) {
+    private byte[] cross(List<byte[]> chunks1, List<byte[]> chunks2) {
         assert chunks1.size() == chunks2.size();
         int length = 0;
         for (int i = 0; i < chunks1.size(); i++) {
             byte[] chunk = i % 2 == 0 ? chunks1.get(i) : chunks2.get(i);
             length += chunk.length;
         }
-        
+
         byte[] crossed = new byte[length];
         int idx = 0;
-        
+
         for (int i = 0; i < chunks1.size(); i++) {
             byte[] chunk = i % 2 == 0 ? chunks1.get(i) : chunks2.get(i);
             System.arraycopy(chunk, 0, crossed, idx, chunk.length);

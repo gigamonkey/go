@@ -13,7 +13,7 @@ import java.util.Random;
 /**
  * The virtual machine for running compiled critters. we actually
  * lightly "compile" the critters, mostly to remove NOPs which
- * includes the actual NOP opcode and also the 217 byte values that
+ * includes the actual NOP opcode and also the many byte values that
  * aren't legal opcodes, and to make sure all targets are actual start
  * of instructions. (E.g. some instructions, e.g. PUSH have operands
  * and we don't want anyone to jump to the operand and treat it as an
@@ -31,78 +31,78 @@ public class VM {
     // purpose macro processor for this one file. Lovely, I know.
 
     // No op.
-    public final static byte NOP            = 0;
+    public final static byte NOP             = 0;
 
     // Memory ops
-    public final static byte LOAD           = 1;
-    public final static byte STORE          = 2;
+    public final static byte LOAD            = 1;
+    public final static byte STORE           = 2;
 
     // Math ops
-    public final static byte ADD            = 3;
-    public final static byte SUB            = 4;
-    public final static byte MUL            = 5;
-    public final static byte DIV            = 6;
-    public final static byte MOD            = 7;
-    public final static byte INC            = 8;
-    public final static byte DEC            = 9;
-    public final static byte RAND           = 10;
+    public final static byte ADD             = 3;
+    public final static byte SUB             = 4;
+    public final static byte MUL             = 5;
+    public final static byte DIV             = 6;
+    public final static byte MOD             = 7;
+    public final static byte INC             = 8;
+    public final static byte DEC             = 9;
+    public final static byte RAND            = 10;
 
     // Movement ops
-    public final static byte FORWARD        = 11;
-    public final static byte TURN_AROUND    = 12;
-    public final static byte TURN_RIGHT     = 13;
-    public final static byte TURN_LEFT      = 14;
-    public final static byte POSITION       = 15;
+    public final static byte FORWARD         = 11;
+    public final static byte TURN_AROUND     = 12;
+    public final static byte TURN_RIGHT      = 13;
+    public final static byte TURN_LEFT       = 14;
+    public final static byte POSITION        = 15;
 
     // Logic ops -- kick it CL style.
-    public final static byte BOOLE_1        = 16;
-    public final static byte BOOLE_2        = 17;
-    public final static byte BOOLE_ANDC1    = 18;
-    public final static byte BOOLE_ANDC2    = 19;
-    public final static byte BOOLE_AND      = 20;
-    public final static byte BOOLE_C1       = 21;
-    public final static byte BOOLE_C2       = 22;
-    public final static byte BOOLE_CLR      = 23;
-    public final static byte BOOLE_EQV      = 24;
-    public final static byte BOOLE_IOR      = 25;
-    public final static byte BOOLE_NAND     = 26;
-    public final static byte BOOLE_NOR      = 27;
-    public final static byte BOOLE_ORC1     = 28;
-    public final static byte BOOLE_ORC2     = 29;
-    public final static byte BOOLE_SET      = 30;
-    public final static byte BOOLE_XOR      = 31;
+    public final static byte BOOLE_1         = 16;
+    public final static byte BOOLE_2         = 17;
+    public final static byte BOOLE_ANDC1     = 18;
+    public final static byte BOOLE_ANDC2     = 19;
+    public final static byte BOOLE_AND       = 20;
+    public final static byte BOOLE_C1        = 21;
+    public final static byte BOOLE_C2        = 22;
+    public final static byte BOOLE_CLR       = 23;
+    public final static byte BOOLE_EQV       = 24;
+    public final static byte BOOLE_IOR       = 25;
+    public final static byte BOOLE_NAND      = 26;
+    public final static byte BOOLE_NOR       = 27;
+    public final static byte BOOLE_ORC1      = 28;
+    public final static byte BOOLE_ORC2      = 29;
+    public final static byte BOOLE_SET       = 30;
+    public final static byte BOOLE_XOR       = 31;
 
     // And this one, that doesn't consume two stack items.
-    public final static byte NOT            = 32;
+    public final static byte NOT             = 32;
 
     // Stack ops -- kick it Forth Style[1]
-    public final static byte POP            = 33;
-    public final static byte SWAP           = 34;
-    public final static byte ROT            = 35;
-    public final static byte DUP            = 36;
-    public final static byte OVER           = 37;
-    public final static byte TUCK           = 38;
-    public final static byte PUSH           = 39;
+    public final static byte POP             = 33;
+    public final static byte SWAP            = 34;
+    public final static byte ROT             = 35;
+    public final static byte DUP             = 36;
+    public final static byte OVER            = 37;
+    public final static byte TUCK            = 38;
+    public final static byte PUSH            = 39;
 
     // Flow control ops
-    public final static byte IFZERO         = 40;
-    public final static byte IFPOS          = 41;
-    public final static byte IFNEG          = 42;
-    public final static byte IFNZERO        = 43;
-    public final static byte IFNPOS         = 44;
-    public final static byte IFNNEG         = 45;
-    public final static byte GOTO           = 46;
-    public final static byte CALL           = 47;
-    public final static byte RET            = 48;
-    public final static byte STOP           = 49;
+    public final static byte IFZERO          = 40;
+    public final static byte IFPOS           = 41;
+    public final static byte IFNEG           = 42;
+    public final static byte IFNZERO         = 43;
+    public final static byte IFNPOS          = 44;
+    public final static byte IFNNEG          = 45;
+    public final static byte GOTO            = 46;
+    public final static byte CALL            = 47;
+    public final static byte RET             = 48;
+    public final static byte STOP            = 49;
 
     // Perception ops
-    public final static byte MINE           = 50;
-    public final static byte THEIRS         = 51;
-    public final static byte EMPTY          = 52;
-    public final static byte MINE_GRADIENT  = 53;
-    public final static byte THEIR_GRADIENT = 54;
-    public final static byte EMPTY_GRADIENT = 55;
+    public final static byte MINE            = 50;
+    public final static byte THEIRS          = 51;
+    public final static byte EMPTY           = 52;
+    public final static byte MINE_GRADIENT   = 53;
+    public final static byte THEIR_GRADIENT  = 54;
+    public final static byte EMPTY_GRADIENT  = 55;
     public final static byte CORNER_GRADIENT = 56;
 
     public final static String[] NAMES = {
@@ -229,7 +229,10 @@ public class VM {
     }
 
     /**
-     * Compile bytecodes and return the Op object representing the first instruction.
+     * Compile bytecodes and return a list of Op objects. (The Ops are
+     * themselves linked into a DAG so we only need the starting Op in
+     * order to execute the code. But it's sometimes handy to have all
+     * the ops in a list, say for dumping them out again.)
      */
     public List<Op> compile(byte[] bytecodes) {
         // We're going to collect the Ops so we can resolve jump
@@ -314,7 +317,7 @@ public class VM {
         BitSet theirs        = context.getTheirs();
         BitSet empty         = context.getEmpty();
         int[] mineGradient   = context.getMineGradient();
-        int[] theirsGradient  = context.getTheirsGradient();
+        int[] theirsGradient = context.getTheirsGradient();
         int[] emptyGradient  = context.getEmptyGradinet();
         int[] cornerGradient = context.getCornerGradient();
 
@@ -550,7 +553,7 @@ public class VM {
             // Unless we've screwed something up, this can only happen
             // when we overflow or underflow either the operand or
             // call stack. So we'll just treat that as an unorthodox
-            // wy of stoping and return the current position. (This is
+            // way of stoping and return the current position. (This is
             // because all other array accesses are constrained such
             // that the indices should always--modulo bugs--be legit.)
         }
