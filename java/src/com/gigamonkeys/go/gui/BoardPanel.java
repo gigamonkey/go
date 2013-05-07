@@ -19,7 +19,7 @@ public class BoardPanel extends JPanel implements BoardListener {
 
     private final static Color BOARD_COLOR = new Color(211, 177, 101);
     private final static Color CRITTER_COLOR = new Color(0, 0, 255, 10); // new Color(70, 127, 250, 10);
-    
+
     private final int size;
     private final int[] stones;
     private final int[] critters;
@@ -28,10 +28,7 @@ public class BoardPanel extends JPanel implements BoardListener {
         this.size     = size;
         this.stones   = new int[size * size];
         this.critters = new int[size * size];
-        //randomStones();
-        //randomCritters();
     }
-
 
     public void stoneAdded(BoardEvent be) {
         stones[be.position] = be.color == com.gigamonkeys.go.Color.BLACK ? BLACK : WHITE;
@@ -45,33 +42,8 @@ public class BoardPanel extends JPanel implements BoardListener {
         repaint();
     }
 
-    private void randomStones() {
-        Random r = new Random();
-        for (int i = 0; i < stones.length; i++) {
-            this.stones[i] = r.nextInt(WHITE + 1);
-        }
-    }
-
-    private void randomCritters() {
-        Random r = new Random();
-        for (int i = 0; i < stones.length; i++) {
-            this.critters[i] = r.nextInt(10000);
-        }
-    }
-
-    private void checker() {
-        for (int i = 0; i < stones.length; i++) {
-            this.stones[i] = (i % 2) + 1;
-        }
-    }
-    
-    public Dimension getPreferredSize() {
-        return new Dimension(300, 300);
-    }
-    
     public void paintComponent(Graphics g) {
-        super.paintComponent(g);       
-
+        super.paintComponent(g);
 
         // Given the size of the panel, we want to make square board
         // such that after dividing it into squares, we can position
@@ -123,7 +95,7 @@ public class BoardPanel extends JPanel implements BoardListener {
     private void drawWhiteStone(Graphics g, int left, int top, int squareSize, int x, int y) {
         int gx = (left - squareSize/2) + squareSize * x;
         int gy = (top - squareSize/2) + squareSize * y;
-        
+
         // adjust for optical illusion that makes white stones with
         // border look bigger.
         if (squareSize > 5) {
@@ -145,7 +117,7 @@ public class BoardPanel extends JPanel implements BoardListener {
             drawCrittersAt(g, left, top, squareSize, i % size, i / size, critters[i]);
         }
     }
-    
+
     private void drawCrittersAt(Graphics g, int left, int top, int squareSize, int x, int y, int num) {
         // Pick a spot a random distance from the exact center.
         int gx = left + squareSize * x;
@@ -165,7 +137,27 @@ public class BoardPanel extends JPanel implements BoardListener {
         g.fillOval(gx - critterSize/2 + xJitter, gy - critterSize/2 + yJitter, critterSize, critterSize);
     }
 
-    
-    
-}
+    ////////////////////////////////////////////////////////////////////////////
+    // Just for testing.
 
+    private void randomStones() {
+        Random r = new Random();
+        for (int i = 0; i < stones.length; i++) {
+            this.stones[i] = r.nextInt(WHITE + 1);
+        }
+    }
+
+    private void randomCritters() {
+        Random r = new Random();
+        for (int i = 0; i < stones.length; i++) {
+            this.critters[i] = r.nextInt(10000);
+        }
+    }
+
+    private void checker() {
+        for (int i = 0; i < stones.length; i++) {
+            this.stones[i] = (i % 2) + 1;
+        }
+    }
+
+}

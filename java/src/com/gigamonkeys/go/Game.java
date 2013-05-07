@@ -7,7 +7,7 @@ package com.gigamonkeys.go;
 /**
  * Controller that runs a single game.
  */
-public class Game {
+public class Game implements Runnable {
 
     public final static int PASS = -1;
 

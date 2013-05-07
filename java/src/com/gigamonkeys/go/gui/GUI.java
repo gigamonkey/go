@@ -20,34 +20,20 @@ public class GUI extends JFrame {
 
         final int size = args.length > 0 ? Integer.parseInt(args[0]) : 19;
 
-        final BoardPanel boardGUI = new BoardPanel(size);
 
         SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     JFrame frame = new JFrame("Go Critters");
+                    BoardPanel boardGUI = new BoardPanel(size);
                     frame.setBounds(100, 100, 600, 600);
                     frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                     frame.add(boardGUI);
                     frame.setExtendedState(frame.getExtendedState() | JFrame.MAXIMIZED_BOTH);
                     frame.setVisible(true);
+                    new GUIWorker(boardGUI, size).execute();
                 }
             });
 
-        Board b  = new Board(size);
-        Random r = new Random();
-
-        b.addBoardListener(boardGUI);
-        b.addBoardListener(new BoardListener() {
-                public void stoneAdded(BoardEvent be) {
-                    // Let the main thread take a break so the Swing
-                    // threads can do their thing and redraw.
-                    try { Thread.sleep(0, 1); } catch (InterruptedException ie) {}
-                }
-                public void stoneRemoved(BoardEvent be) {}
-
-            });
-
-        new Game(new RandomPlayer(), new RandomPlayer(), b).run();
         System.out.println("Done.");
     }
 }

@@ -109,11 +109,11 @@ public class Board {
     private void fireBoardEvents(int position, Color color, BitSet killed) {
 
         Color other = other(color);
-        BoardEvent added = new BoardEvent(this, position, color);
+        BoardEvent added = new BoardEvent(this, position, color, true);
         List<BoardEvent> removed = new ArrayList<BoardEvent>();
 
         for (int i = killed.nextSetBit(0); i != -1; i = killed.nextSetBit(i + 1)) {
-            removed.add(new BoardEvent(this, i, other));
+            removed.add(new BoardEvent(this, i, other, false));
         }
 
         for (BoardListener listener: listeners) {
