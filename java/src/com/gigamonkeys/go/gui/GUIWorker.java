@@ -43,7 +43,6 @@ public class GUIWorker extends SwingWorker<Boolean, BoardEvent> implements Board
 
     @Override
     protected Boolean doInBackground() throws Exception {
-        // Run game and publish(BoardEvent) for each event.
         Board b = new Board(size);
         b.addBoardListener(this);
         new Game(new RandomPlayer(), new RandomPlayer(), b).run();
