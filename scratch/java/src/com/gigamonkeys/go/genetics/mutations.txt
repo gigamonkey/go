@@ -1,0 +1,17 @@
+During copying:
+
+  Bit: flip a random bit in a byte
+
+  Byte: replace a byte with a random byte.
+
+  Insertion: insert a random sequence of bytes
+
+  Deletion: delete a random number of bytes.
+
+  Permutation: Replace a sequence of bytes with a random
+  permutation. (Specific variants of this include swapping two bytes;
+  reversing a sequence of bytes)
+
+After chunking:
+
+  Swap: Swap two not-necessarily consecutive chunks.
