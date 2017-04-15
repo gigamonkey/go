@@ -1,8 +1,6 @@
 package com.gigamonkeys.go.genetics;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
@@ -73,6 +71,10 @@ public class Genetics {
             }
         }
 
+        /**
+         * Copy length bytes from other, starting at pos in the other
+         * array, appending them to our genes.
+         */
         public void copy(byte[] other, int pos, int length) {
             maybeExpand(length);
             System.arraycopy(other, pos, genes, idx, length);
@@ -116,17 +118,25 @@ public class Genetics {
 
                 int length = random.nextInt(maxCopyMutation);
 
-                switch (random.nextInt(3)) {
+                switch (random.nextInt(5)) {
                 case 0: // Insertion
                     newgenes.insert(randomGenes(length));
                     i++;
                     break;
-                case 1: // Deletion (a.k.a. skip)
+                case 1: // Duplication
+                    length = Math.min(length, genes.length - i);
+                    newgenes.copy(genes, i, length + i);
+                    i++;
+                    break;
+                case 2: // Deletion (a.k.a. skip)
+                case 3:
+                    // (twice as likely to balance insertion and
+                    // duplication)
                     length = Math.min(length, genes.length - i);
                     i += length;
                     prev = i;
                     break;
-                case 2: // Permutation
+                case 4: // Permutation
                     length = Math.min(length, genes.length - i);
                     newgenes.permute(genes, i, length, random);
                     i += length;

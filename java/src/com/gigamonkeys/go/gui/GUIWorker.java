@@ -1,12 +1,9 @@
 package com.gigamonkeys.go.gui;
 
-import com.gigamonkeys.go.Board;
-import com.gigamonkeys.go.BoardEvent;
-import com.gigamonkeys.go.BoardListener;
-import com.gigamonkeys.go.Game;
-import com.gigamonkeys.go.RandomPlayer;
+import com.gigamonkeys.go.*;
+
+import javax.swing.*;
 import java.util.List;
-import javax.swing.SwingWorker;
 
 /*
  * Copyright (c) 2013 Peter Seibel

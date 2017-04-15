@@ -1,17 +1,5 @@
 package com.gigamonkeys.go.gui;
 
-import com.gigamonkeys.go.Board;
-import com.gigamonkeys.go.BoardEvent;
-import com.gigamonkeys.go.BoardListener;
-import com.gigamonkeys.go.Color;
-import com.gigamonkeys.go.Game;
-import com.gigamonkeys.go.IllegalMoveException;
-import com.gigamonkeys.go.Player;
-import com.gigamonkeys.go.RandomPlayer;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.util.Random;
 import javax.swing.*;
 
 public class GUI extends JFrame {

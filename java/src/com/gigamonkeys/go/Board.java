@@ -1,12 +1,6 @@
 package com.gigamonkeys.go;
 
-import java.util.ArrayList;
-import java.util.BitSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
-import java.util.Random;
+import java.util.*;
 
 /*
  * Implement the main rules of Go as far as what happens when stones

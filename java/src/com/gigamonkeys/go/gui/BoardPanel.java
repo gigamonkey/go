@@ -1,14 +1,13 @@
 package com.gigamonkeys.go.gui;
 
+import com.gigamonkeys.go.BoardEvent;
+import com.gigamonkeys.go.BoardListener;
+
+import javax.swing.JPanel;
 import java.awt.Color;
-import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.util.Random;
-import javax.swing.*;
-
-import com.gigamonkeys.go.BoardEvent;
-import com.gigamonkeys.go.BoardListener;
 
 
 public class BoardPanel extends JPanel implements BoardListener {
