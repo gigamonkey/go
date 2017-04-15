@@ -5,7 +5,36 @@ game of Go.
 I've only been hacking on it for a couple days and my Java is rusty so
 the code is likely to be gnarly in places.
 
-Note also that so far I've only implemented the basic rules of Go. The
-GA part remains to be done.
+The system consists of three main parts:
+
+- Implementation of the rules of Go. For simplicity we use an ancient
+  style of scoring where a player's score is the number their stones
+  on the board minus the number of their stones that were captured. In
+  all a but few edge cases this yields the same result as modern
+  scoring methods except that players have to somewhat mindlessly fill
+  in all but two eyes in all their groups. Modern scoring methods
+  allow players to skip this mindless part of the game. However, while
+  human players can usually agree on what groups are dead (but not
+  captured) and what territory belongs to what player, it's hard to
+  put into code. And sometimes humans don't agree and then have to
+  resume play.
+
+- A system for breeding critters whose genetic material is simply
+  arrays of bytes. We implement sexual reproduction of these critters
+  with point mutations as well as mutations that can occur during
+  crossing whereby certain sections of DNA are deleted, duplicated, or
+  permuted or new sections of random DNA are inserted.
+
+- A virtual machine which can execute the bytes of the critters' DNA
+  as machine code. This VM has the usual set of arithmetic and logical
+  operators as well as operators specific to this context: critters
+  have the ability to see the stones on the board and also to detect
+  "gradients" that lead toward (and thus also away from) the corners
+  and sides of the board, as well as concentrations of their own
+  stones, their opponent's stones, and empty points.
+
+  We actually "compile" the DNA into an intermediate form that can be
+  executed a bit more efficiently.
+
 
 --Peter
